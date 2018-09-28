@@ -18,7 +18,7 @@ from models.mlt_us import MLT_US
 if __name__ == '__main__':
     options = Args()
 
-    handler = logging.FileHandler('{}.log'.format(options.main), 'w')
+    handler = logging.FileHandler('{}-{}.log'.format(options.main, options.model_type), 'w')
     log = logging.getLogger(options.main)
     log.addHandler(handler)
     log.setLevel(logging.DEBUG)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     train_data_loader = Loader(train_data_np, train_rumor_np, train_stance_np, train_seq_len_np, options=options)
     test_data_loader = Loader(test_data_np, test_rumor_np, test_stance_np, test_seq_len_np, options=options)
 
-    if options.mode_type == 'mlt-us':
+    if options.model_type == 'mlt-us':
         mlt_model = MLT_US(options=options)
         mlt_model.train_model(train_data_loader, test_data_loader)
 
