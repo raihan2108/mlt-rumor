@@ -31,4 +31,14 @@ class BOWModel:
         self.rumor_output = tf.placeholder(shape=[self.batch_size], dtype=tf.float32)
 
     def build_graph(self):
-        self.tweet_feat = tf.reduce_mean(self.tweet_vec, axis=0)
+        self.inputs_feat = []
+        for i in range(0, self.batch_size):
+            self.inputs_feat.append(tf.reduce_mean(self.tweet_vec[i, 0: self.seq_len[i], :], axis=0))
+        self.inputs_feat = tf.convert_to_tensor(self.inputs_feat)
+        self.rumor_score = tf.layers.dense(inputs=self.inputs_feat, units=self.r_label_size,
+            activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(),
+            bias_initializer=tf.constant_initializer(0.25))
+        rumor_true = tf.one_hot(tf.cast(self.rumor_output, dtype=tf.int32), self.r_label_size)
+        self.rumor_label_cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2
+                                               (logits=self.rumor_score, labels=rumor_true))
+        self.pred_rumor_label = tf.cast(tf.argmax(self.rumor_score, axis=1), dtype=tf.int32)
