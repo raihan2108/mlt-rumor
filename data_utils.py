@@ -6,7 +6,7 @@ from urlextract import URLExtract
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 rumor_label = {'false': 0, 'true': 1, 'unverified': 2}
-stance_label = {'no_stance': 0, 'supporting': 1, 'denying': 2, 'comment': 3, 'appeal-for-more-information': 4}
+stance_label = {'supporting': 0, 'denying': 1, 'comment': 3, 'appeal-for-more-information': 3, 'no_stance': 4}
 
 
 def get_cascade_info(data_path):
@@ -32,7 +32,7 @@ def load_cascades(data_path):
     all_tweets, max_cascade_len, thread_count = get_cascade_info(data_path)
     print(max_cascade_len, thread_count)
 
-    tf_idf_vectorizer = TfidfVectorizer()
+    tf_idf_vectorizer = TfidfVectorizer(max_features=5000)
     tf_idf_vectorizer = tf_idf_vectorizer.fit(all_tweets)
     vocab_count = len(tf_idf_vectorizer.vocabulary_)
 

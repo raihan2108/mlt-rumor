@@ -23,3 +23,12 @@ class BOWModel:
         self.test_interval = options.test_epoch
         self.log = logging.getLogger(options.main + '.' + __name__)
         self.log.setLevel(logging.DEBUG)
+
+    def init_variables(self):
+        self.tweet_vec = tf.placeholder(shape=[self.batch_size, self.max_seq_len, self.vocab_size], dtype=tf.float32)
+        self.seq_len = tf.placeholder(shape=[self.batch_size], dtype=tf.int32)
+        self.stance_output = tf.placeholder(shape=[self.batch_size, self.max_seq_len], dtype=tf.float32)
+        self.rumor_output = tf.placeholder(shape=[self.batch_size], dtype=tf.float32)
+
+    def build_graph(self):
+        self.tweet_feat = tf.reduce_mean(self.tweet_vec, axis=0)

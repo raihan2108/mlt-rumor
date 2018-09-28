@@ -5,9 +5,9 @@ class Args:
         self.batch_size = 15
         self.state_size = 256
         self.emb_size = 256
-        self.learning_rate = 0.001
-        self.cell_type = 'lstm'
-        self.rumor_label = 2
+        self.learning_rate = 0.0005
+        self.cell_type = 'gru'
+        self.rumor_label = 3
         self.stance_label = 4
         self.epochs = 100
         self.main = 'RSD'

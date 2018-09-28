@@ -36,6 +36,10 @@ if __name__ == '__main__':
     if options.model_type == 'mlt-us':
         mlt_model = MLT_US(options=options)
         mlt_model.train_model(train_data_loader, test_data_loader)
+    elif options.model_type == 'mlt-bow':
+        pass
+
+
 
     # all_conv = load_all_cascades('cascades')
     # cv = CoprpusVectorizer(all_data=all_conv)
