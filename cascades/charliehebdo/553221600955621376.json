@@ -1,0 +1,30 @@
+{
+  "label": "true",
+  "thread": "553221600955621376",
+  "cascade": [
+    {
+      "user_id": "2779009591",
+      "text": "clarissa, 27 years old, police trainee of montrouge police in #france. victim of this morning's attack. via @_batou_ http://t.co/kk0w0d6nnv",
+      "time": "2015-01-08 16:08:02",
+      "support": "supporting",
+      "tweet_id": "553221600955621376",
+      "retweet_count": 101
+    },
+    {
+      "user_id": "2459596554",
+      "time": "2015-01-08 16:35:07",
+      "text": "@ArmedResearch @_batou_ RIP",
+      "tweet_id": "553228413922967552",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "25201206",
+      "time": "2015-01-08 18:48:47",
+      "text": "@ArmedResearch @mattdpearce RIP Clarissa",
+      "tweet_id": "553262052899164161",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

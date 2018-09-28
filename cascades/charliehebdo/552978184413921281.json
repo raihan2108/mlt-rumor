@@ -1,0 +1,30 @@
+{
+  "label": "false",
+  "thread": "552978184413921281",
+  "cascade": [
+    {
+      "user_id": "20159596",
+      "text": "#banksy's take on #charliehebdo. #jesuischarlie #noussommescharlie http://t.co/f6y07d9fj1",
+      "time": "2015-01-08 00:00:47",
+      "support": "supporting",
+      "tweet_id": "552978184413921281",
+      "retweet_count": 125
+    },
+    {
+      "user_id": "266309584",
+      "time": "2015-01-08 00:04:57",
+      "text": "@juliamacfarlane http://t.co/zHekINcQjJ",
+      "tweet_id": "552979232515948546",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "352953768",
+      "time": "2015-01-08 00:06:08",
+      "text": "Banksy gets it right. \u201c@juliamacfarlane: #Banksy's take on #CharlieHebdo. #JeSuisCharlie #NousSommesCharlie http://t.co/Y51AAQ6DRm\u201d",
+      "tweet_id": "552979530923925504",
+      "retweet_count": 0,
+      "support": "supporting"
+    }
+  ]
+}

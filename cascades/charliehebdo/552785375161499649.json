@@ -1,0 +1,38 @@
+{
+  "label": "true",
+  "thread": "552785375161499649",
+  "cascade": [
+    {
+      "user_id": "16973333",
+      "text": "breaking: 10 reportedly shot dead at paris hq of french weekly charlie hebdo http://t.co/5f1dowzocq",
+      "time": "2015-01-07 11:14:38",
+      "support": "supporting",
+      "tweet_id": "552785375161499649",
+      "retweet_count": 128
+    },
+    {
+      "user_id": "18770158",
+      "time": "2015-01-07 11:16:31",
+      "text": "@Independent How dreadful.",
+      "tweet_id": "552785851655393281",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "593253537",
+      "time": "2015-01-07 11:16:38",
+      "text": "Nowhere is safe anymore? \"@independent",
+      "tweet_id": "552785877748158464",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "1610238266",
+      "time": "2015-01-07 11:25:21",
+      "text": "@Independent why does one feel that this may have something to so with freedom of speech - http://t.co/Uhe5VimATk",
+      "tweet_id": "552788073340489728",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "label": "true",
+  "thread": "544358564484378624",
+  "cascade": [
+    {
+      "user_id": "28785486",
+      "text": "police: negotiators are now in contact with armed hostage-taker in sydney situation; motive remains unknown - http://t.co/mp18e4ddjw",
+      "time": "2014-12-15 05:09:30",
+      "support": "supporting",
+      "tweet_id": "544358564484378624",
+      "retweet_count": 114
+    },
+    {
+      "user_id": "18455693",
+      "time": "2014-12-15 05:11:01",
+      "text": "RT @ABC: Police: Negotiators are now in contact w/ armed hostage-taker in #Sydney situation; motive remains unknown - http://t.co/DJds34016X",
+      "tweet_id": "544358949399851008",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "1078368642",
+      "time": "2014-12-15 05:52:53",
+      "text": "@ABC Really?  The motive is unknown?  Does the flag in the window provide any possible clue?  Do you employ the world's worst reporters?",
+      "tweet_id": "544369484019281921",
+      "retweet_count": 0,
+      "support": "appeal-for-more-information"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "label": "true",
+  "thread": "581047170637381632",
+  "cascade": [
+    {
+      "user_id": "15037033",
+      "text": "names of pilots rumored to be patrick sonderheimer with co-pilot andreas lubitz - no formal confirmation yet. #germanwings",
+      "time": "2015-03-26 10:56:55",
+      "support": "supporting",
+      "tweet_id": "581047170637381632",
+      "retweet_count": 26
+    },
+    {
+      "user_id": "97639418",
+      "time": "2015-03-26 11:07:25",
+      "text": "@henkvaness Andreas Lubitz FB profile removed",
+      "tweet_id": "581049811757076480",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "281196193",
+      "time": "2015-03-26 11:10:18",
+      "text": "@henkvaness Source of info?",
+      "tweet_id": "581050539003277312",
+      "retweet_count": 0,
+      "support": "appeal-for-more-information"
+    },
+    {
+      "user_id": "232588404",
+      "time": "2015-03-26 11:24:56",
+      "text": "@henkvaness where did you hear that?",
+      "tweet_id": "581054221086285824",
+      "retweet_count": 0,
+      "support": "appeal-for-more-information"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "label": "true",
+  "thread": "580371845997682688",
+  "cascade": [
+    {
+      "user_id": "5943072",
+      "text": "#4u9525 took eight minutes to descend from 38,000 feet to impact, says germanwings ceo winkelmann.",
+      "time": "2015-03-24 14:13:25",
+      "support": "supporting",
+      "tweet_id": "580371845997682688",
+      "retweet_count": 27
+    },
+    {
+      "user_id": "50963",
+      "time": "2015-03-24 14:16:23",
+      "text": "@thatjohn @AirlineReporter at what point during those 8 min did distress call go out?",
+      "tweet_id": "580372594186170368",
+      "retweet_count": 0,
+      "support": "appeal-for-more-information"
+    },
+    {
+      "user_id": "3092483316",
+      "time": "2015-03-24 14:26:20",
+      "text": "@thatjohn @AirlineReporter Just over 4500 fpm average rate of descent...completely normal and would seem controlled...",
+      "tweet_id": "580375094784106496",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

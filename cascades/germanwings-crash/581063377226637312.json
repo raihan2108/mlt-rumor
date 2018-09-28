@@ -1,0 +1,30 @@
+{
+  "label": "true",
+  "thread": "581063377226637312",
+  "cascade": [
+    {
+      "user_id": "5943072",
+      "text": "#4u9525: robin names andreas lubitz as the copilot in the flight deck who crashed the aircraft.",
+      "time": "2015-03-26 12:01:19",
+      "support": "supporting",
+      "tweet_id": "581063377226637312",
+      "retweet_count": 31
+    },
+    {
+      "user_id": "234684092",
+      "time": "2015-03-26 12:03:08",
+      "text": "@thatjohn @mschenk",
+      "tweet_id": "581063835194392576",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "727879477",
+      "time": "2015-03-26 12:29:09",
+      "text": "@thatjohn Have they named the pilot?",
+      "tweet_id": "581070383023030272",
+      "retweet_count": 0,
+      "support": "appeal-for-more-information"
+    }
+  ]
+}

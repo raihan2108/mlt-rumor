@@ -1,0 +1,54 @@
+{
+  "label": "false",
+  "thread": "529713467184676864",
+  "cascade": [
+    {
+      "user_id": "9695312",
+      "text": "secret prince show rumored for toronto tonight http://t.co/ge2dfcfklj",
+      "time": "2014-11-04 19:15:06",
+      "support": "supporting",
+      "tweet_id": "529713467184676864",
+      "retweet_count": 31
+    },
+    {
+      "user_id": "2775563841",
+      "time": "2014-11-04 19:19:51",
+      "text": "\u201c@billboard: Secret Prince show rumored for Toronto tonight http://t.co/5Wvo9cdOkD\u201d why does no one ever do secret shows in Ohio? \ud83d\ude14",
+      "tweet_id": "529714660690644992",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "29145540",
+      "time": "2014-11-04 19:20:37",
+      "text": "\u201c@billboard: Secret Prince show rumored for Toronto tonight http://t.co/03P4JFAC8R\u201d @TheBruun",
+      "tweet_id": "529714853955399680",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "21221054",
+      "time": "2014-11-04 19:21:52",
+      "text": "\u201c@billboard: Secret Prince show rumored for Toronto tonight http://t.co/90Qxxfa6w7\u201d Wishing this was NYC @pdubfunk",
+      "tweet_id": "529715169942065152",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "245957977",
+      "time": "2014-11-04 20:48:06",
+      "text": "@Rachelle_JL I think it sold out in minus 4 minutes.",
+      "tweet_id": "529736871707152385",
+      "retweet_count": 0,
+      "support": "denying"
+    },
+    {
+      "user_id": "29145540",
+      "time": "2014-11-04 21:00:21",
+      "text": "@TheBruun noooooo!",
+      "tweet_id": "529739950993203201",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

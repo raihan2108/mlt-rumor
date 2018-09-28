@@ -1,0 +1,38 @@
+{
+  "label": "false",
+  "thread": "524947416869388288",
+  "cascade": [
+    {
+      "user_id": "27917781",
+      "text": "reports now that 2nd shooter has been shot in downtown ottawa #ottnews",
+      "time": "2014-10-22 15:36:31",
+      "support": "supporting",
+      "tweet_id": "524947416869388288",
+      "retweet_count": 237
+    },
+    {
+      "user_id": "141776971",
+      "time": "2014-10-22 15:37:10",
+      "text": "@newhot899 #ottnews",
+      "tweet_id": "524947580149825537",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "27715962",
+      "time": "2014-10-22 15:37:32",
+      "text": "@newhot899 good!!! \ud83d\udc4c",
+      "tweet_id": "524947672822988800",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "28229857",
+      "time": "2014-10-22 16:13:00",
+      "text": "@newhot899 live news just reported cops yelling at people to run. Must be a third shooter!",
+      "tweet_id": "524956595588194305",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

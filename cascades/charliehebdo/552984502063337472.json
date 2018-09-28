@@ -1,0 +1,38 @@
+{
+  "label": "true",
+  "thread": "552984502063337472",
+  "cascade": [
+    {
+      "user_id": "380648579",
+      "text": "#update three men including two brothers identified in france newspaper attack: source http://t.co/5nonuqjsu1 #jesuischarlie #charliehebdo",
+      "time": "2015-01-08 00:25:53",
+      "support": "denying",
+      "tweet_id": "552984502063337472",
+      "retweet_count": 107
+    },
+    {
+      "user_id": "102452887",
+      "time": "2015-01-08 00:45:56",
+      "text": "\u201c@AFP: #UPDATE Three men including two brothers identified in France newspaper attack: source http://t.co/sXtqLIsrW4 #CharlieHebdo\u201d",
+      "tweet_id": "552989544589430784",
+      "retweet_count": 0,
+      "support": "denying"
+    },
+    {
+      "user_id": "579504493",
+      "time": "2015-01-08 01:19:56",
+      "text": "@AFP Protestamos com Arte tamb\u00e9m aqui no Brasil http://t.co/vz33IStpj6 #CharlieHebdo  http://t.co/eid1oMMmjb",
+      "tweet_id": "552998100764491776",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "1150376528",
+      "time": "2015-01-08 07:32:19",
+      "text": "@AFP Go to hell #CharlieHebdo",
+      "tweet_id": "553091815218237440",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

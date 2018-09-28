@@ -1,0 +1,30 @@
+{
+  "label": "true",
+  "thread": "524941132237910016",
+  "cascade": [
+    {
+      "user_id": "36730252",
+      "text": "here's that dramatic video via @josh_wingrove of shots fired inside parliament building: https://t.co/1waid25voe #ottawa #shooting",
+      "time": "2014-10-22 15:11:33",
+      "support": "supporting",
+      "tweet_id": "524941132237910016",
+      "retweet_count": 100
+    },
+    {
+      "user_id": "1962606451",
+      "time": "2014-10-22 15:14:34",
+      "text": "\u201c@affanchowdhry: Here's that dramatic video via @josh_wingrove of shots fired inside parliament building: https://t.co/RHGVpajcg4",
+      "tweet_id": "524941892115783680",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "1546762968",
+      "time": "2014-10-22 15:24:36",
+      "text": "@affanchowdhry @josh_wingrove why does this idiot think it's ok to follow the police during a armed man hunt?",
+      "tweet_id": "524944416721862656",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

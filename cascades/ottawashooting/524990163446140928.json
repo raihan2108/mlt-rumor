@@ -1,0 +1,54 @@
+{
+  "label": "false",
+  "thread": "524990163446140928",
+  "cascade": [
+    {
+      "user_id": "203123011",
+      "text": "police have clarified that there were two shootings in ottawa today, not three: at the war memorial and parliament hill.",
+      "time": "2014-10-22 18:26:23",
+      "support": "denying",
+      "tweet_id": "524990163446140928",
+      "retweet_count": 273
+    },
+    {
+      "user_id": "503956899",
+      "time": "2014-10-22 18:27:58",
+      "text": "@CTVNews you guys \"confirmed\" there were 3 shootings not long ago. How about you wait for official reports before saying things.",
+      "tweet_id": "524990563217838081",
+      "retweet_count": 0,
+      "support": "supporting"
+    },
+    {
+      "user_id": "503956899",
+      "time": "2014-10-22 18:28:46",
+      "text": "@CTVNews get it right. http://t.co/GHYxMuzPG9",
+      "tweet_id": "524990764049522688",
+      "retweet_count": 0,
+      "support": "denying"
+    },
+    {
+      "user_id": "1043778398",
+      "time": "2014-10-22 18:36:05",
+      "text": "\u201c@CTVNews: Police have clarified that there were two shootings in Ottawa today, not three: at the War Memorial and Parliament Hill.\u201d wow",
+      "tweet_id": "524992603000143872",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "102238015",
+      "time": "2014-10-22 18:36:29",
+      "text": "RT @CTVNews Police have clarified that there were two shootings in Ottawa today, not three: at the War Memorial and Parliament Hill. #Canada",
+      "tweet_id": "524992704673890304",
+      "retweet_count": 0,
+      "support": "denying"
+    },
+    {
+      "user_id": "25412397",
+      "time": "2014-10-22 19:20:41",
+      "text": "@CTVNews @ctvsaskatoon so what happened at Rideau? Nothing?",
+      "tweet_id": "525003827494531073",
+      "retweet_count": 0,
+      "support": "appeal-for-more-information"
+    }
+  ]
+}

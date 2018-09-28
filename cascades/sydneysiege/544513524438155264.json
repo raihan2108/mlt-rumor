@@ -1,0 +1,30 @@
+{
+  "label": "true",
+  "thread": "544513524438155264",
+  "cascade": [
+    {
+      "user_id": "788524",
+      "text": "sydney siege: police enter cafe as hostages flee the scene, gunfire heard, reports of an injured person \u2013 live http://t.co/c4xbud6a3m",
+      "time": "2014-12-15 15:25:15",
+      "support": "supporting",
+      "tweet_id": "544513524438155264",
+      "retweet_count": 106
+    },
+    {
+      "user_id": "17206650",
+      "time": "2014-12-15 15:27:04",
+      "text": "@guardiannews thanks so much for sharing. Just added it here: https://t.co/vvZlFxK6Gi http://t.co/P8oNkgJr8p",
+      "tweet_id": "544513980195430400",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "345521045",
+      "time": "2014-12-15 15:27:55",
+      "text": "@guardiannews @robcrilly #illridewithyou all the way from Pakistan",
+      "tweet_id": "544514197665492994",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}

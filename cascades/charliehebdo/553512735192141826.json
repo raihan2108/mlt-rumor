@@ -1,0 +1,54 @@
+{
+  "label": "true",
+  "thread": "553512735192141826",
+  "cascade": [
+    {
+      "user_id": "87416722",
+      "text": "update - afp: an unnamed police source says the killing of the policewoman in #paris on thursday is linked to the #charliehebdo attack",
+      "time": "2015-01-09 11:24:54",
+      "support": "supporting",
+      "tweet_id": "553512735192141826",
+      "retweet_count": 108
+    },
+    {
+      "user_id": "245308008",
+      "time": "2015-01-09 11:28:30",
+      "text": "@SkyNewsBreak wow and you were so sure there was no connection despite having no info. Tell us the news not your view as news. Numpties.",
+      "tweet_id": "553513642478813184",
+      "retweet_count": 0,
+      "support": "denying"
+    },
+    {
+      "user_id": "526197032",
+      "time": "2015-01-09 11:29:36",
+      "text": "@SkyNewsBreak of course it was going to be linked, something needs done before they take over the world !!",
+      "tweet_id": "553513916572381185",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "45953887",
+      "time": "2015-01-09 11:33:11",
+      "text": "@SkyNewsBreak I'd rather wait for official confirmation than your scaremongering speculative social media sourcing news. #givefacts #unnamed",
+      "tweet_id": "553514819085946881",
+      "retweet_count": 0,
+      "support": "denying"
+    },
+    {
+      "user_id": "146199428",
+      "time": "2015-01-09 11:39:26",
+      "text": "@SkyNewsBreak at least it hasn't been forgotten... there's been so little coverage, no mention of finding the shooter that escaped!!",
+      "tweet_id": "553516393791238145",
+      "retweet_count": 0,
+      "support": "comment"
+    },
+    {
+      "user_id": "309142386",
+      "time": "2015-01-10 07:48:22",
+      "text": "@SkyNewsBreak no shit #JeSuisCharlie",
+      "tweet_id": "553820631087988736",
+      "retweet_count": 0,
+      "support": "comment"
+    }
+  ]
+}
