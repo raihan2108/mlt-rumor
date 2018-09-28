@@ -9,9 +9,9 @@ from utils import CoprpusVectorizer
 from data_utils import load_cascades, Loader
 
 from models.mlt_single import MLTSingle
-from models.bow_model_old import BOWModel
-from models.mlt_shared_rnn import MLTSharedRNN
-from models.mlt_shared_mlp import MLTSharedMLP
+from models.bow_model import BOWModel
+# from models.mlt_shared_rnn import MLTSharedRNN
+# from models.mlt_shared_mlp import MLTSharedMLP
 
 from models.mlt_us import MLT_US
 
@@ -37,7 +37,8 @@ if __name__ == '__main__':
         mlt_model = MLT_US(options=options)
         mlt_model.train_model(train_data_loader, test_data_loader)
     elif options.model_type == 'mlt-bow':
-        pass
+        mlt_model = BOWModel(options=options)
+        mlt_model.train_model(train_data_loader, test_data_loader)
 
 
 

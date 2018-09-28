@@ -24,6 +24,9 @@ class BOWModel:
         self.log = logging.getLogger(options.main + '.' + __name__)
         self.log.setLevel(logging.DEBUG)
 
+        self.init_variables()
+        self.build_graph()
+
     def _weight_and_bias(self, in_size, out_size):
         weight = tf.truncated_normal([in_size, out_size], stddev=0.01)
         bias = tf.constant(0.1, shape=[out_size])
