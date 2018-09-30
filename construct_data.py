@@ -134,6 +134,18 @@ def sort_cascade(seq):
     return sorted_seq
 
 
+def collect_user_feat(entry):
+    u_feat = dict()
+    u_feat['user_id'] = entry['id_str']
+    u_feat['followers_count'] = entry['followers_count']
+    u_feat['statuses_count'] = entry['statuses_count']
+    u_feat['friends_count'] = entry['friends_count']
+    u_feat['verified'] = entry['verified']
+    u_feat['listed_count'] = entry['listed_count']
+
+    return u_feat
+
+
 def process_thread(thread_dir):
     cascade = []
     event = thread_dir.split('/')[-2]
@@ -152,6 +164,7 @@ def process_thread(thread_dir):
     source_text = source_tweet['text'].strip().lower()
 
     st = stances[event][thread][str(source_tweet_id)]
+    s_user_info = collect_user_feat(source_tweet['user'])
 
     with open(join(thread_dir, 'annotation.json')) as raw_file:
         anno = json.load(raw_file)
@@ -162,7 +175,8 @@ def process_thread(thread_dir):
 
     entry = {
         'user_id': source_user_id, 'text': source_text, 'time': ts, 'support': st['support'],
-        'tweet_id': source_tweet_id, 'retweet_count': retweet_count    # , 'parent': '-1'
+        'tweet_id': source_tweet_id, 'retweet_count': retweet_count,    # , 'parent': '-1'
+        'user_info': s_user_info
     }
     cascade.append(entry)
     struct = json.loads(open(join(thread_dir, 'structure.json')).readline())
@@ -171,6 +185,7 @@ def process_thread(thread_dir):
     for re in reply_tweets:
         reply_tweets_info[re.split('.')[0]] = {}
         a_reply_tweet = json.load(open(join(thread_dir, 'reactions', re)))
+        r_user_info = collect_user_feat(a_reply_tweet['user'])
         parent = a_reply_tweet['in_reply_to_status_id_str']
         r_user_id = a_reply_tweet['user']['id_str']
         r_time = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(a_reply_tweet['created_at'],
@@ -191,6 +206,7 @@ def process_thread(thread_dir):
         reply_tweets_info[re.split('.')[0]]['text'] = r_text
         reply_tweets_info[re.split('.')[0]]['tweet_id'] = r_tweet_id
         reply_tweets_info[re.split('.')[0]]['retweet_count'] = re_retweet_count
+        reply_tweets_info[re.split('.')[0]]['user_info'] = r_user_info
 
     # reply_tweet_ids = [rtf.split()[0] for rtf in reply_tweets]
     for re in reply_tweets_info:
@@ -201,7 +217,8 @@ def process_thread(thread_dir):
                  'time': reply_tweets_info[re]['time'],
                  'text': reply_tweets_info[re]['text'],
                  'tweet_id': reply_tweets_info[re]['tweet_id'],
-                 'retweet_count': re_retweet_count
+                 'retweet_count': reply_tweets_info[re]['retweet_count'],
+                 'user_info': reply_tweets_info[re]['user_info']
                  }
         if parent in list(reply_tweets_info.keys()) + [str(source_tweet_id)]:
             if r_stance['responsetype-vs-source'] == 'comment':
