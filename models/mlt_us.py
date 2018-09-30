@@ -109,6 +109,8 @@ class MLT_US:
             sess.run(init)
             max_rumor_micro, max_rumor_macro, max_rumor_acc = 0., 0., 0.
             max_stance_micro, max_stance_macro, max_stance_acc = 0., 0., 0.
+            best_cost = 10000.0
+
             for epi in range(1, self.epochs + 1):
                 if self.arch == 'joint':
                     global_cost = 0.
@@ -181,6 +183,15 @@ class MLT_US:
                 if epi % self.test_interval == 0:
                     avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
                     avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = self.test_model(sess, test_data_loader)
+                    if global_cost < best_cost:
+                        global_cost = best_cost
+                        max_rumor_macro = avg_macro_f1_rumor
+                        max_rumor_micro = avg_micro_f1_rumor
+                        max_rumor_acc = avg_acc_rumor
+
+                        max_stance_macro = avg_macro_f1_stance
+                        max_stance_micro = avg_micro_f1_stance
+                        max_stance_acc = avg_acc_stance
 
                     print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                           format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
@@ -190,6 +201,15 @@ class MLT_US:
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
                     self.log.debug('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
+
+        print('final test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+              format(max_rumor_micro, max_rumor_macro, max_rumor_acc))
+        self.log.debug('final test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                       format(max_rumor_micro, max_rumor_macro, max_rumor_acc))
+        print('final test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+              format(max_stance_micro, max_stance_macro, max_stance_acc))
+        self.log.debug('final test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                       format(max_stance_micro, max_stance_macro, max_stance_acc))
 
     def test_model(self, sess: tf.Session, data_loader):
         n_batches = len(data_loader)
