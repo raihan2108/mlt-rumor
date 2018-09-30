@@ -119,7 +119,7 @@ class MLT_US:
                     global_stance_cost = 0.
                 n_batches = len(train_data_loader)
                 for i in range(0, n_batches):
-                    batch_data, rumor_batch_label, stance_batch_label, batch_length = train_data_loader()
+                    batch_data, rumor_batch_label, stance_batch_label, batch_length, _ = train_data_loader()
                     if batch_data.shape[0] < self.batch_size:
                         continue
                     if self.arch == 'joint':
@@ -216,7 +216,7 @@ class MLT_US:
         avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor = 0., 0., 0.
         avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = 0., 0., 0.
         for i in range(0, n_batches):
-            batch_data, rumor_batch_label, stance_batch_label, batch_length = data_loader()
+            batch_data, rumor_batch_label, stance_batch_label, batch_length, _ = data_loader()
             if batch_data.shape[0] < self.batch_size:
                 continue
             fd_rumor = {

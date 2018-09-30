@@ -9,11 +9,12 @@ from utils import CoprpusVectorizer
 from data_utils import load_cascades, Loader
 
 from models.mlt_single import MLTSingle
-from models.bow_model import BOWModel
 # from models.mlt_shared_rnn import MLTSharedRNN
 # from models.mlt_shared_mlp import MLTSharedMLP
-
 from models.mlt_us import MLT_US
+from models.bow_model import BOWModel
+from models.mlt_user import MLTUser
+
 
 if __name__ == '__main__':
     options = Args()
@@ -23,23 +24,28 @@ if __name__ == '__main__':
     log.addHandler(handler)
     log.setLevel(logging.DEBUG)
 
-    tweet_vec, rumor_label, stance_label, seq_len = load_cascades('cascades')
+    tweet_vec, rumor_label, stance_label, seq_len, user_feat = load_cascades('cascades')
     print(tweet_vec.shape, rumor_label.shape, stance_label.shape)
+
     train_data_np, test_data_np, train_rumor_np, test_rumor_np, train_stance_np, test_stance_np, train_seq_len_np,\
-    test_seq_len_np = train_test_split(tweet_vec, rumor_label, stance_label, seq_len, test_size=0.20, random_state=42)
+    test_seq_len_np, train_user_feat_np, test_user_feat_np = train_test_split(tweet_vec, rumor_label,
+    stance_label, seq_len, user_feat, test_size=0.20, random_state=42)
 
     options.seq_len = tweet_vec.shape[1]
     options.vocab_size = tweet_vec.shape[2]
+    options.user_feat_size = user_feat.shape[2]
     train_data_loader = Loader(train_data_np, train_rumor_np, train_stance_np, train_seq_len_np, options=options)
     test_data_loader = Loader(test_data_np, test_rumor_np, test_stance_np, test_seq_len_np, options=options)
 
     if options.model_type == 'mlt-us':
-        mlt_model = MLT_US(options=options)
+        mlt_model = MLTUser(options=options)
         mlt_model.train_model(train_data_loader, test_data_loader)
     elif options.model_type == 'mlt-bow':
         mlt_model = BOWModel(options=options)
         mlt_model.train_model(train_data_loader, test_data_loader)
-
+    elif options.model_type == 'mlt-user':
+        mlt_model = MLTUser(options=options)
+        mlt_model.train_model(train_data_loader, test_data_loader)
 
 
     # all_conv = load_all_cascades('cascades')

@@ -4,7 +4,7 @@ import tensorflow as tf
 from sklearn.metrics import f1_score, accuracy_score
 
 
-class BOWModel:
+class MLTUser:
     def __init__(self, options):
         self.batch_size = options.batch_size
         self.max_seq_len = options.seq_len
@@ -17,6 +17,11 @@ class BOWModel:
         self.arch = options.archi
         self.r_label_size = options.rumor_label
         self.s_label_size = options.stance_label
+        self.user_feat_size = options.user_feat_size
+        self.vae_latent_size = options.vae_latent_size
+        self.vae_encoder_size = options.vae_encoder_size
+        self.vae_decoder_size = options.vae_decoder_size
+        self.reg_coeff = 0.001
 
         self.display_interval = options.display_epoch
         self.train_performance_interval = options.train_performnace_epoch
@@ -27,58 +32,140 @@ class BOWModel:
         self.init_variables()
         self.build_graph()
 
-    def _weight_and_bias(self, in_size, out_size):
-        weight = tf.truncated_normal([in_size, out_size], stddev=0.01)
-        bias = tf.constant(0.1, shape=[out_size])
-        return tf.Variable(weight), tf.Variable(bias)
+    def xavier_init(fan_in, fan_out, constant=1):
+        low = -constant * np.sqrt(6.0 / (fan_in + fan_out))
+        high = constant * np.sqrt(6.0 / (fan_in + fan_out))
+        return tf.random_uniform((fan_in, fan_out), minval=low, maxval=high, dtype=tf.float32)
 
     def init_variables(self):
         self.tweet_vec = tf.placeholder(shape=[self.batch_size, self.max_seq_len, self.vocab_size], dtype=tf.float32)
         self.seq_len = tf.placeholder(shape=[self.batch_size], dtype=tf.int32)
         self.stance_output = tf.placeholder(shape=[self.batch_size, self.max_seq_len], dtype=tf.float32)
         self.rumor_output = tf.placeholder(shape=[self.batch_size], dtype=tf.float32)
+        self.user_feat = tf.placeholder(shape=[self.batch_size, self.max_seq_len, self.user_feat_size], dtype=tf.float32)
+
+        self.vae_weights = {
+            "encoder_h1": tf.get_variable('encoder_h1', shape=[self.user_feat_size, self.vae_encoder_size],
+                                          initializer=tf.contrib.layers.xavier_initializer()),
+            "encoder_mu": tf.get_variable('encoder_mu', shape=[self.vae_encoder_size, self.vae_latent_size],
+                                          initializer=tf.contrib.layers.xavier_initializer()),
+            "encoder_logvar": tf.get_variable('encoder_logvar', shape=[self.vae_encoder_size, self.vae_latent_size],
+                                          initializer=tf.contrib.layers.xavier_initializer()),
+            "decoder_h1": tf.get_variable('encoder_h1', shape=[self.vae_latent_size, self.vae_decoder_size],
+                                          initializer=tf.contrib.layers.xavier_initializer()),
+            "decoder_reconstruction": tf.get_variable('encoder_h1', shape=[self.vae_decoder_size, self.user_feat_size],
+                                          initializer=tf.contrib.layers.xavier_initializer())
+        }
+
+        # define bias shape
+        self.vae_biases = {
+            "encoder_h1": tf.Variable(tf.zeros([self.vae_encoder_size])),
+            "encoder_mu": tf.Variable(tf.zeros([self.vae_latent_size])),
+            "encoder_logvar": tf.Variable(tf.zeros([self.vae_latent_size])),
+            "decoder_h1": tf.Variable(tf.zeros([self.vae_decoder_size])),
+            "decoder_reconstruction": tf.Variable(tf.zeros([self.user_feat_size])),
+        }
+
+    def construct_vae(self):
+        with tf.variable_scope('user-vae'):
+            l2_loss = tf.constant(0.0)  # l2 norm
+            l2_loss += tf.nn.l2_loss(self.vae_weights["encoder_h1"])
+            hidden_encoder = tf.nn.relu(tf.add(tf.matmul(self.user_feat,
+                                self.vae_weights["encoder_h1"]), self.vae_biases["encoder_h1"]))
+
+            ## encoder_mu
+            l2_loss += tf.nn.l2_loss(self.vae_weights["encoder_mu"])
+            mu_encoder = tf.add(tf.matmul(hidden_encoder, self.vae_weights["encoder_mu"]), self.vae_biases["encoder_mu"])
+
+            ## encoder_logvar
+            l2_loss += tf.nn.l2_loss((self.vae_weights["encoder_logvar"]))
+            logvar_encoder = tf.add(tf.matmul(hidden_encoder, self.vae_weights["encoder_logvar"]),
+                                              self.vae_biases["encoder_logvar"])
+
+            epsilon = tf.random_normal(tf.shape(logvar_encoder), dtype=tf.float32, name='epsilon')
+
+            ## sample latent variable
+            std_encoder = tf.exp(tf.multiply(0.5, logvar_encoder))
+            self.z = tf.add(mu_encoder, tf.multiply(std_encoder, epsilon))
+
+            l2_loss += tf.nn.l2_loss(self.vae_weights["decoder_h1"])
+            hidden_decoder = tf.nn.relu(tf.add(tf.matmul(self.z, self.vae_weights["decoder_h1"]), self.vae_biases["decoder_h1"]))
+
+            ## decoder_reconstruction
+            l2_loss += tf.nn.l2_loss(self.vae_weights["decoder_reconstruction"])
+            x_hat = tf.add(tf.matmul(hidden_decoder, self.vae_weights["decoder_reconstruction"]),
+                           self.vae_biases["decoder_reconstruction"])
+
+            # calculate loss
+            kl_divergence = -0.5 * tf.reduce_sum(1 + logvar_encoder - tf.square(mu_encoder) - tf.exp(logvar_encoder),
+                                                 reduction_indices=1)
+            bce = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(x_hat, self.user_feat), reduction_indices=1)
+            self.vae_loss = tf.reduce_mean(tf.add(kl_divergence, bce))
+            self.total_vae_cost = tf.add(self.vae_loss, tf.multiply(self.reg_coeff, l2_loss))
+
+    def _weight_and_bias(self, in_size, out_size):
+        weight = tf.truncated_normal([in_size, out_size], stddev=0.01)
+        bias = tf.constant(0.1, shape=[out_size])
+        return tf.Variable(weight), tf.Variable(bias)
 
     def build_graph(self):
-        self.inputs_feat = []
-        for i in range(0, self.batch_size):
-            self.inputs_feat.append(tf.reduce_mean(self.tweet_vec[i, 0: self.seq_len[i], :], axis=0))
-        self.inputs_feat = tf.convert_to_tensor(self.inputs_feat)
-        self.rumor_score = tf.layers.dense(inputs=self.inputs_feat, units=self.r_label_size,
-            activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(),
-            bias_initializer=tf.constant_initializer(0.25))
-        rumor_true = tf.one_hot(tf.cast(self.rumor_output, dtype=tf.int32), self.r_label_size)
-        self.rumor_label_cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2
-                                               (logits=self.rumor_score, labels=rumor_true))
-        self.pred_rumor_label = tf.cast(tf.argmax(self.rumor_score, axis=1), dtype=tf.int32)
+        self.construct_vae()
 
-        self.stance_network = tf.layers.dense(self.tweet_vec, units=self.state_size,
-            kernel_initializer=tf.contrib.layers.xavier_initializer(), bias_initializer=tf.constant_initializer(0.25))
+        with tf.variable_scope('shared'):
+            if self.cell_type == 'lstm':
+                self.rnn_cell_shared = tf.nn.rnn_cell.LSTMCell(self.state_size, state_is_tuple=True)
+            else:
+                self.rnn_cell_shared = tf.nn.rnn_cell.GRUCell(self.state_size)
+            self.init_state_shared = self.rnn_cell_shared.zero_state(self.batch_size, tf.float32)
+            self.shared_rnn_output, self.shared_hidden_state = \
+                tf.nn.dynamic_rnn(self.rnn_cell_shared, self.tweet_vec, self.seq_len, self.init_state_shared)
 
-        weight, bias = self._weight_and_bias(self.state_size, self.s_label_size)
-        output = tf.reshape(self.stance_network, [-1, self.state_size])
-        self.stance_score = (tf.matmul(output, weight) + bias)
-        self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
-        self.stance_true = tf.one_hot(tf.cast(self.stance_output, dtype=tf.int32), self.s_label_size)
-        self.temp_stance_cost = tf.nn.softmax_cross_entropy_with_logits(labels=self.stance_true,
-                                                                        logits=self.stance_score, dim=2)
-        mask = tf.sequence_mask(lengths=self.seq_len, maxlen=self.max_seq_len, dtype=tf.float32)
-        self.temp_stance_cost *= mask
-        self.stance_label_cost = tf.reduce_mean(self.temp_stance_cost)
-        self.pred_stance_label = tf.cast(tf.argmax(self.stance_score, axis=2), dtype=tf.int32)
+        with tf.variable_scope('rumor-clf'):
+            if self.cell_type == 'lstm':
+                self.rumor_score = tf.layers.dense(inputs=self.shared_hidden_state.h, units=self.r_label_size,
+                    activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                                   bias_initializer=tf.constant_initializer(0.25))
+            else:
+                self.rumor_score = tf.layers.dense(inputs=self.shared_hidden_state, units=self.r_label_size,
+                                                   activation=tf.nn.relu,
+                                                   kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                                   bias_initializer=tf.constant_initializer(0.25))
+            rumor_true = tf.one_hot(tf.cast(self.rumor_output, dtype=tf.int32), self.r_label_size)
+            self.rumor_label_cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits
+                                                   (logits=self.rumor_score, labels=rumor_true))
+            self.pred_rumor_label = tf.cast(tf.argmax(self.rumor_score, axis=1), dtype=tf.int32)
+
+        with tf.variable_scope('stance-clf'):
+            self.input_feat = tf.concat([self.shared_rnn_output, self.z], axis=2)
+            weight, bias = self._weight_and_bias(self.state_size + self.vae_latent_size, self.s_label_size)
+            output = tf.reshape(self.input_feat, [-1, self.state_size])
+            self.stance_score = (tf.matmul(output, weight) + bias)
+            self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
+            self.stance_true = tf.one_hot(tf.cast(self.stance_output, dtype=tf.int32), self.s_label_size)
+            self.temp_stance_cost = tf.nn.softmax_cross_entropy_with_logits(labels=self.stance_true, logits=self.stance_score, dim=2)
+            mask = tf.sequence_mask(lengths=self.seq_len, maxlen=self.max_seq_len, dtype=tf.float32)
+            self.temp_stance_cost *= mask
+            self.stance_label_cost = tf.reduce_mean(self.temp_stance_cost)
+            # self.stance_label_cost = self.cost()
+            self.pred_stance_label = tf.cast(tf.argmax(self.stance_score, axis=2), dtype=tf.int32)
 
         if self.arch == 'joint':
             with tf.variable_scope('joint-opt'):
                 self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-                self.total_cost = self.rumor_label_cost + self.stance_label_cost
+                self.total_cost = self.rumor_label_cost + self.stance_label_cost + self.total_vae_cost
                 self.train_op = self.optimizer.minimize(self.total_cost)
         else:
             with tf.variable_scope('rumor-opt'):
-                self.rumor_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
+                self.rumor_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
                 self.rumor_train_op = self.rumor_optimizer.minimize(self.rumor_label_cost)
 
             with tf.variable_scope('stance-opt'):
-                self.stance_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
+                self.stance_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
                 self.stance_train_op = self.stance_optimizer.minimize(self.stance_label_cost)
+
+            with tf.variable_scope('vae-opt'):
+                self.vae_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
+                self.vae_train_op = self.vae_optimizer.minimize(self.vae_optimizer)
 
     def train_model(self, train_data_loader, test_data_loader):
         # tf.reset_default_graph()
@@ -88,6 +175,7 @@ class BOWModel:
             max_rumor_micro, max_rumor_macro, max_rumor_acc = 0., 0., 0.
             max_stance_micro, max_stance_macro, max_stance_acc = 0., 0., 0.
             best_cost = 10000.0
+
             for epi in range(1, self.epochs + 1):
                 if self.arch == 'joint':
                     global_cost = 0.
@@ -156,6 +244,7 @@ class BOWModel:
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
                     self.log.debug('train: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))'''
+
                 if epi % self.test_interval == 0:
                     avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
                     avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = self.test_model(sess, test_data_loader)
@@ -181,12 +270,11 @@ class BOWModel:
         print('final test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
               format(max_rumor_micro, max_rumor_macro, max_rumor_acc))
         self.log.debug('final test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
-              format(max_rumor_micro, max_rumor_macro, max_rumor_acc))
+                       format(max_rumor_micro, max_rumor_macro, max_rumor_acc))
         print('final test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
               format(max_stance_micro, max_stance_macro, max_stance_acc))
         self.log.debug('final test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
-              format(max_stance_micro, max_stance_macro, max_stance_acc))
-
+                       format(max_stance_micro, max_stance_macro, max_stance_acc))
 
     def test_model(self, sess: tf.Session, data_loader):
         n_batches = len(data_loader)

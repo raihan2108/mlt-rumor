@@ -12,6 +12,9 @@ class Args:
         self.epochs = 100
         self.main = 'RSD'
         self.archi = 'joint'
+        self.vae_latent_size = 16
+        self.vae_encoder_size = 64
+        self.vae_decoder_size = 64
 
         self.display_epoch = 1
         self.train_performnace_epoch = 1
