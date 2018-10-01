@@ -87,13 +87,13 @@ class BOWModel:
             sess.run(init)
             max_rumor_micro, max_rumor_macro, max_rumor_acc = 0., 0., 0.
             max_stance_micro, max_stance_macro, max_stance_acc = 0., 0., 0.
-            best_cost = 10000.0
+            best_rumor_cost = 10000.0
+            best_stance_cost = 10000.0
             for epi in range(1, self.epochs + 1):
-                if self.arch == 'joint':
-                    global_cost = 0.
-                else:
-                    global_rumor_cost = 0.
-                    global_stance_cost = 0.
+                global_cost = 0.
+                global_rumor_cost = 0.
+                global_stance_cost = 0.
+
                 n_batches = len(train_data_loader)
                 for i in range(0, n_batches):
                     batch_data, rumor_batch_label, stance_batch_label, batch_length, _ = train_data_loader()
@@ -106,11 +106,14 @@ class BOWModel:
                             self.stance_output: stance_batch_label,
                             self.seq_len: batch_length
                         }
-                        _, total_cost = sess.run([self.train_op, self.total_cost], feed_dict=fd_all)
+                        _, total_cost, rumor_cost, stance_cost = sess.run([self.train_op, self.total_cost,
+                                    self.rumor_label_cost, self.stance_label_cost], feed_dict=fd_all)
                         '''output_state, hidden_state = \
                             sess.run([self.shared_hidden_state, self.shared_rnn_output], feed_dict=fd_all)'''
 
                         global_cost += total_cost
+                        global_rumor_cost += rumor_cost
+                        global_stance_cost += stance_cost
                     else:
                         fd_rumor = {
                             self.tweet_vec: batch_data,
@@ -119,6 +122,7 @@ class BOWModel:
                         }
                         _, rumor_cost = sess.run([self.rumor_train_op, self.rumor_label_cost], feed_dict=fd_rumor)
                         global_rumor_cost += rumor_cost
+
                         fd_stance = {
                             self.tweet_vec: batch_data,
                             self.stance_output: stance_batch_label,
@@ -129,6 +133,8 @@ class BOWModel:
 
                 if self.arch == 'joint':
                     global_cost /= n_batches
+                    global_rumor_cost /= n_batches
+                    global_stance_cost /= n_batches
                 else:
                     global_rumor_cost /= n_batches
                     global_stance_cost /= n_batches
@@ -159,12 +165,15 @@ class BOWModel:
                 if epi % self.test_interval == 0:
                     avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
                     avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = self.test_model(sess, test_data_loader)
-                    if global_cost < best_cost:
-                        global_cost = best_cost
+
+                    if global_rumor_cost < best_rumor_cost:
+                        best_rumor_cost = global_rumor_cost
                         max_rumor_macro = avg_macro_f1_rumor
                         max_rumor_micro = avg_micro_f1_rumor
                         max_rumor_acc = avg_acc_rumor
 
+                    if global_stance_cost < best_stance_cost:
+                        best_stance_cost = global_stance_cost
                         max_stance_macro = avg_macro_f1_stance
                         max_stance_micro = avg_micro_f1_stance
                         max_stance_acc = avg_acc_stance
@@ -186,7 +195,6 @@ class BOWModel:
               format(max_stance_micro, max_stance_macro, max_stance_acc))
         self.log.debug('final test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
               format(max_stance_micro, max_stance_macro, max_stance_acc))
-
 
     def test_model(self, sess: tf.Session, data_loader):
         n_batches = len(data_loader)

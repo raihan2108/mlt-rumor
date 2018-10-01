@@ -9,7 +9,7 @@ class Args:
         self.cell_type = 'gru'
         self.rumor_label = 3
         self.stance_label = 4
-        self.epochs = 100
+        self.epochs = 50
         self.main = 'RSD'
         self.archi = 'joint'
         self.vae_latent_size = 16
@@ -21,5 +21,6 @@ class Args:
         self.test_epoch = 1
 
         # self.mode_type = 'single'
-        self.model_type = 'mlt-us'
+        # self.model_type = 'mlt-us'
         # self.model_type = 'mlt-bow'
+        self.model_type = 'mlt-user'

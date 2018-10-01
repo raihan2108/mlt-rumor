@@ -51,9 +51,9 @@ class MLTUser:
                                           initializer=tf.contrib.layers.xavier_initializer()),
             "encoder_logvar": tf.get_variable('encoder_logvar', shape=[self.vae_encoder_size, self.vae_latent_size],
                                           initializer=tf.contrib.layers.xavier_initializer()),
-            "decoder_h1": tf.get_variable('encoder_h1', shape=[self.vae_latent_size, self.vae_decoder_size],
+            "decoder_h1": tf.get_variable('decoder_h1', shape=[self.vae_latent_size, self.vae_decoder_size],
                                           initializer=tf.contrib.layers.xavier_initializer()),
-            "decoder_reconstruction": tf.get_variable('encoder_h1', shape=[self.vae_decoder_size, self.user_feat_size],
+            "decoder_reconstruction": tf.get_variable('decoder_recog', shape=[self.vae_decoder_size, self.user_feat_size],
                                           initializer=tf.contrib.layers.xavier_initializer())
         }
 
@@ -70,36 +70,36 @@ class MLTUser:
         with tf.variable_scope('user-vae'):
             l2_loss = tf.constant(0.0)  # l2 norm
             l2_loss += tf.nn.l2_loss(self.vae_weights["encoder_h1"])
-            hidden_encoder = tf.nn.relu(tf.add(tf.matmul(self.user_feat,
-                                self.vae_weights["encoder_h1"]), self.vae_biases["encoder_h1"]))
+            hidden_encoder = tf.nn.relu(tf.add(tf.tensordot(self.user_feat,
+                                self.vae_weights["encoder_h1"], axes=[2, 0]), self.vae_biases["encoder_h1"]))
 
             ## encoder_mu
             l2_loss += tf.nn.l2_loss(self.vae_weights["encoder_mu"])
-            mu_encoder = tf.add(tf.matmul(hidden_encoder, self.vae_weights["encoder_mu"]), self.vae_biases["encoder_mu"])
+            mu_encoder = tf.add(tf.tensordot(hidden_encoder, self.vae_weights["encoder_mu"], axes=[2, 0]), self.vae_biases["encoder_mu"])
 
             ## encoder_logvar
             l2_loss += tf.nn.l2_loss((self.vae_weights["encoder_logvar"]))
-            logvar_encoder = tf.add(tf.matmul(hidden_encoder, self.vae_weights["encoder_logvar"]),
+            self.logvar_encoder = tf.add(tf.tensordot(hidden_encoder, self.vae_weights["encoder_logvar"], axes=[2, 0]),
                                               self.vae_biases["encoder_logvar"])
 
-            epsilon = tf.random_normal(tf.shape(logvar_encoder), dtype=tf.float32, name='epsilon')
+            self.epsilon = tf.random_normal(tf.shape(self.logvar_encoder), dtype=tf.float32, name='epsilon')
 
             ## sample latent variable
-            std_encoder = tf.exp(tf.multiply(0.5, logvar_encoder))
-            self.z = tf.add(mu_encoder, tf.multiply(std_encoder, epsilon))
+            self.std_encoder = tf.exp(tf.multiply(0.5, self.logvar_encoder))
+            self.z = tf.add(mu_encoder, tf.multiply(self.std_encoder, self.epsilon))
 
             l2_loss += tf.nn.l2_loss(self.vae_weights["decoder_h1"])
-            hidden_decoder = tf.nn.relu(tf.add(tf.matmul(self.z, self.vae_weights["decoder_h1"]), self.vae_biases["decoder_h1"]))
+            hidden_decoder = tf.nn.relu(tf.add(tf.tensordot(self.z, self.vae_weights["decoder_h1"], axes=[2, 0]), self.vae_biases["decoder_h1"]))
 
             ## decoder_reconstruction
             l2_loss += tf.nn.l2_loss(self.vae_weights["decoder_reconstruction"])
-            x_hat = tf.add(tf.matmul(hidden_decoder, self.vae_weights["decoder_reconstruction"]),
+            self.x_hat = tf.add(tf.tensordot(hidden_decoder, self.vae_weights["decoder_reconstruction"], axes=[2, 0]),
                            self.vae_biases["decoder_reconstruction"])
 
             # calculate loss
-            kl_divergence = -0.5 * tf.reduce_sum(1 + logvar_encoder - tf.square(mu_encoder) - tf.exp(logvar_encoder),
-                                                 reduction_indices=1)
-            bce = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(x_hat, self.user_feat), reduction_indices=1)
+            kl_divergence = -0.5 * tf.reduce_sum(1 + self.logvar_encoder - tf.square(mu_encoder) - tf.exp(self.logvar_encoder),
+                                                 axis=2)
+            bce = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.x_hat, labels=self.user_feat), axis=2)
             self.vae_loss = tf.reduce_mean(tf.add(kl_divergence, bce))
             self.total_vae_cost = tf.add(self.vae_loss, tf.multiply(self.reg_coeff, l2_loss))
 
@@ -138,7 +138,7 @@ class MLTUser:
         with tf.variable_scope('stance-clf'):
             self.input_feat = tf.concat([self.shared_rnn_output, self.z], axis=2)
             weight, bias = self._weight_and_bias(self.state_size + self.vae_latent_size, self.s_label_size)
-            output = tf.reshape(self.input_feat, [-1, self.state_size])
+            output = tf.reshape(self.input_feat, [-1, self.state_size + self.vae_latent_size])
             self.stance_score = (tf.matmul(output, weight) + bias)
             self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
             self.stance_true = tf.one_hot(tf.cast(self.stance_output, dtype=tf.int32), self.s_label_size)
@@ -174,17 +174,17 @@ class MLTUser:
             sess.run(init)
             max_rumor_micro, max_rumor_macro, max_rumor_acc = 0., 0., 0.
             max_stance_micro, max_stance_macro, max_stance_acc = 0., 0., 0.
-            best_cost = 10000.0
+            best_rumor_cost = 10000.0
+            best_stance_cost = 10000.0
 
             for epi in range(1, self.epochs + 1):
-                if self.arch == 'joint':
-                    global_cost = 0.
-                else:
-                    global_rumor_cost = 0.
-                    global_stance_cost = 0.
+                global_cost = 0.
+                global_rumor_cost = 0.
+                global_stance_cost = 0.
                 n_batches = len(train_data_loader)
+
                 for i in range(0, n_batches):
-                    batch_data, rumor_batch_label, stance_batch_label, batch_length, _ = train_data_loader()
+                    batch_data, rumor_batch_label, stance_batch_label, batch_length, batch_user = train_data_loader()
                     if batch_data.shape[0] < self.batch_size:
                         continue
                     if self.arch == 'joint':
@@ -192,13 +192,18 @@ class MLTUser:
                             self.tweet_vec: batch_data,
                             self.rumor_output: rumor_batch_label,
                             self.stance_output: stance_batch_label,
-                            self.seq_len: batch_length
+                            self.seq_len: batch_length,
+                            self.user_feat: batch_user
                         }
-                        _, total_cost = sess.run([self.train_op, self.total_cost], feed_dict=fd_all)
+                        _, total_cost, rumor_cost, stance_cost = sess.run([self.train_op, self.total_cost,
+                                self.rumor_label_cost, self.stance_label_cost], feed_dict=fd_all)
+                       #  print(vae_cost)
                         '''output_state, hidden_state = \
                             sess.run([self.shared_hidden_state, self.shared_rnn_output], feed_dict=fd_all)'''
 
                         global_cost += total_cost
+                        global_rumor_cost += rumor_cost
+                        global_stance_cost += stance_cost
                     else:
                         fd_rumor = {
                             self.tweet_vec: batch_data,
@@ -217,6 +222,8 @@ class MLTUser:
 
                 if self.arch == 'joint':
                     global_cost /= n_batches
+                    global_rumor_cost /= n_batches
+                    global_stance_cost /= n_batches
                 else:
                     global_rumor_cost /= n_batches
                     global_stance_cost /= n_batches
@@ -248,12 +255,15 @@ class MLTUser:
                 if epi % self.test_interval == 0:
                     avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
                     avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = self.test_model(sess, test_data_loader)
-                    if global_cost < best_cost:
-                        global_cost = best_cost
+
+                    if global_rumor_cost < best_rumor_cost:
+                        best_rumor_cost = global_rumor_cost
                         max_rumor_macro = avg_macro_f1_rumor
                         max_rumor_micro = avg_micro_f1_rumor
                         max_rumor_acc = avg_acc_rumor
 
+                    if global_stance_cost < best_stance_cost:
+                        best_stance_cost = global_stance_cost
                         max_stance_macro = avg_macro_f1_stance
                         max_stance_micro = avg_micro_f1_stance
                         max_stance_acc = avg_acc_stance
@@ -281,13 +291,14 @@ class MLTUser:
         avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor = 0., 0., 0.
         avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = 0., 0., 0.
         for i in range(0, n_batches):
-            batch_data, rumor_batch_label, stance_batch_label, batch_length, _ = data_loader()
+            batch_data, rumor_batch_label, stance_batch_label, batch_length, batch_user = data_loader()
             if batch_data.shape[0] < self.batch_size:
                 continue
             fd_rumor = {
                 self.tweet_vec: batch_data,
                 self.rumor_output: rumor_batch_label,
-                self.seq_len: batch_length
+                self.seq_len: batch_length,
+                self.user_feat: batch_user
             }
             pred_rumor = sess.run(self.pred_rumor_label, feed_dict=fd_rumor)
             micro_f1_rumor = f1_score(rumor_batch_label, pred_rumor, average='micro')
@@ -301,7 +312,8 @@ class MLTUser:
             fd_stance = {
                 self.tweet_vec: batch_data,
                 self.stance_output: stance_batch_label,
-                self.seq_len: batch_length
+                self.seq_len: batch_length,
+                self.user_feat: batch_user
             }
             pred_stance = sess.run(self.pred_stance_label, feed_dict=fd_stance)
             temp_macro_f1_stance, temp_micro_f1_stance, temp_acc_stance = 0., 0., 0.

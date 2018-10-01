@@ -34,11 +34,11 @@ if __name__ == '__main__':
     options.seq_len = tweet_vec.shape[1]
     options.vocab_size = tweet_vec.shape[2]
     options.user_feat_size = user_feat.shape[2]
-    train_data_loader = Loader(train_data_np, train_rumor_np, train_stance_np, train_seq_len_np, options=options)
-    test_data_loader = Loader(test_data_np, test_rumor_np, test_stance_np, test_seq_len_np, options=options)
+    train_data_loader = Loader(train_data_np, train_rumor_np, train_stance_np, train_seq_len_np, train_user_feat_np, options=options)
+    test_data_loader = Loader(test_data_np, test_rumor_np, test_stance_np, test_seq_len_np, test_user_feat_np, options=options)
 
     if options.model_type == 'mlt-us':
-        mlt_model = MLTUser(options=options)
+        mlt_model = MLT_US(options=options)
         mlt_model.train_model(train_data_loader, test_data_loader)
     elif options.model_type == 'mlt-bow':
         mlt_model = BOWModel(options=options)

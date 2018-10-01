@@ -6,7 +6,7 @@ from urlextract import URLExtract
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 rumor_label = {'false': 0, 'true': 1, 'unverified': 2}
-stance_label = {'supporting': 0, 'denying': 1, 'comment': 3, 'appeal-for-more-information': 3, 'no_stance': 4}
+stance_label = {'supporting': 0, 'denying': 1, 'comment': 2, 'appeal-for-more-information': 3, 'no_stance': 4}
 
 
 def get_cascade_info(data_path):
@@ -60,11 +60,23 @@ def load_cascades(data_path):
                 all_tweet_numpy[tc, i, :] = np.asarray(text_feat.todense()).reshape([-1])
                 stance_label_numpy[tc, i] = a_stance_label
                 user_info = cas['user_info']
-                user_feat_numpy[tc, i, 0] = user_info['followers_count']
-                user_feat_numpy[tc, i, 1] = user_info['statuses_count']
-                user_feat_numpy[tc, i, 2] = user_info['friends_count']
+                if user_info['followers_count'] == 0:
+                    user_feat_numpy[tc, i, 0] = 0
+                else:
+                    user_feat_numpy[tc, i, 0] = np.log(user_info['followers_count'] )
+                if user_info['statuses_count'] == 0:
+                    user_feat_numpy[tc, i, 1] = 0
+                else:
+                    user_feat_numpy[tc, i, 1] = np.log(user_info['statuses_count'] )
+                if user_info['friends_count'] == 0:
+                    user_feat_numpy[tc, i, 2] = 0
+                else:
+                    user_feat_numpy[tc, i, 2] = np.log(user_info['friends_count'] )
                 user_feat_numpy[tc, i, 3] = bool(user_info['verified'])
-                user_feat_numpy[tc, i, 4] = user_info['listed_count']
+                if user_info['listed_count'] == 0:
+                    user_feat_numpy[tc, i, 4] = 0
+                else:
+                    user_feat_numpy[tc, i, 4] = np.log(user_info['listed_count'] )
 
                 '''tid = cas['tweet_id']
                 entry['text'] = tweet.lower()
