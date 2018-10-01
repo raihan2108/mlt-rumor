@@ -7,7 +7,7 @@ from utils import load_all_cascades, Corpus, Loader
 # from data_utils import load_cascades, Loader
 
 from models_old.mlt_single import MLTSingle
-from models.bow_model_old import BOWModel
+from models_old.bow_model_old import BOWModel
 from models_old.mlt_shared_rnn import MLTSharedRNN
 from models_old.mlt_shared_mlp import MLTSharedMLP
 
