@@ -1,0 +1,320 @@
+end of epoch: 1 avg total cost: 19.214
+test: micro f1 rumor:0.453 macro f1 rumor:0.208 accuracy rumor: 0.453
+test: micro f1 stance:0.561 macro f1 stance:0.245 accuracy stance: 0.561
+end of epoch: 2 avg total cost: 9.439
+test: micro f1 rumor:0.493 macro f1 rumor:0.220 accuracy rumor: 0.493
+test: micro f1 stance:0.648 macro f1 stance:0.199 accuracy stance: 0.648
+end of epoch: 3 avg total cost: 4.995
+test: micro f1 rumor:0.667 macro f1 rumor:0.569 accuracy rumor: 0.667
+test: micro f1 stance:0.647 macro f1 stance:0.213 accuracy stance: 0.647
+end of epoch: 4 avg total cost: 1.468
+test: micro f1 rumor:0.640 macro f1 rumor:0.514 accuracy rumor: 0.640
+test: micro f1 stance:0.651 macro f1 stance:0.197 accuracy stance: 0.651
+end of epoch: 5 avg total cost: -2.955
+test: micro f1 rumor:0.720 macro f1 rumor:0.572 accuracy rumor: 0.720
+test: micro f1 stance:0.632 macro f1 stance:0.209 accuracy stance: 0.632
+end of epoch: 6 avg total cost: -9.345
+test: micro f1 rumor:0.680 macro f1 rumor:0.536 accuracy rumor: 0.680
+test: micro f1 stance:0.652 macro f1 stance:0.197 accuracy stance: 0.652
+end of epoch: 7 avg total cost: -19.020
+test: micro f1 rumor:0.733 macro f1 rumor:0.579 accuracy rumor: 0.733
+test: micro f1 stance:0.647 macro f1 stance:0.196 accuracy stance: 0.647
+end of epoch: 8 avg total cost: -35.004
+test: micro f1 rumor:0.747 macro f1 rumor:0.672 accuracy rumor: 0.747
+test: micro f1 stance:0.641 macro f1 stance:0.195 accuracy stance: 0.641
+end of epoch: 9 avg total cost: -61.645
+test: micro f1 rumor:0.760 macro f1 rumor:0.601 accuracy rumor: 0.760
+test: micro f1 stance:0.614 macro f1 stance:0.202 accuracy stance: 0.614
+end of epoch: 10 avg total cost: -102.003
+test: micro f1 rumor:0.640 macro f1 rumor:0.539 accuracy rumor: 0.640
+test: micro f1 stance:0.617 macro f1 stance:0.201 accuracy stance: 0.617
+end of epoch: 11 avg total cost: -172.506
+test: micro f1 rumor:0.707 macro f1 rumor:0.558 accuracy rumor: 0.707
+test: micro f1 stance:0.639 macro f1 stance:0.195 accuracy stance: 0.639
+end of epoch: 12 avg total cost: -278.221
+test: micro f1 rumor:0.693 macro f1 rumor:0.549 accuracy rumor: 0.693
+test: micro f1 stance:0.655 macro f1 stance:0.198 accuracy stance: 0.655
+end of epoch: 13 avg total cost: -434.437
+test: micro f1 rumor:0.667 macro f1 rumor:0.559 accuracy rumor: 0.667
+test: micro f1 stance:0.649 macro f1 stance:0.201 accuracy stance: 0.649
+end of epoch: 14 avg total cost: -668.715
+test: micro f1 rumor:0.733 macro f1 rumor:0.693 accuracy rumor: 0.733
+test: micro f1 stance:0.646 macro f1 stance:0.196 accuracy stance: 0.646
+end of epoch: 15 avg total cost: -943.259
+test: micro f1 rumor:0.653 macro f1 rumor:0.580 accuracy rumor: 0.653
+test: micro f1 stance:0.660 macro f1 stance:0.201 accuracy stance: 0.660
+end of epoch: 16 avg total cost: -1355.820
+test: micro f1 rumor:0.733 macro f1 rumor:0.653 accuracy rumor: 0.733
+test: micro f1 stance:0.642 macro f1 stance:0.195 accuracy stance: 0.642
+end of epoch: 17 avg total cost: -1842.162
+test: micro f1 rumor:0.747 macro f1 rumor:0.684 accuracy rumor: 0.747
+test: micro f1 stance:0.648 macro f1 stance:0.197 accuracy stance: 0.648
+end of epoch: 18 avg total cost: -2504.280
+test: micro f1 rumor:0.667 macro f1 rumor:0.584 accuracy rumor: 0.667
+test: micro f1 stance:0.668 macro f1 stance:0.226 accuracy stance: 0.668
+end of epoch: 19 avg total cost: -3346.311
+test: micro f1 rumor:0.707 macro f1 rumor:0.660 accuracy rumor: 0.707
+test: micro f1 stance:0.643 macro f1 stance:0.196 accuracy stance: 0.643
+end of epoch: 20 avg total cost: -4271.762
+test: micro f1 rumor:0.733 macro f1 rumor:0.610 accuracy rumor: 0.733
+test: micro f1 stance:0.646 macro f1 stance:0.202 accuracy stance: 0.646
+end of epoch: 21 avg total cost: -5665.627
+test: micro f1 rumor:0.720 macro f1 rumor:0.624 accuracy rumor: 0.720
+test: micro f1 stance:0.657 macro f1 stance:0.198 accuracy stance: 0.657
+end of epoch: 22 avg total cost: -7057.774
+test: micro f1 rumor:0.693 macro f1 rumor:0.547 accuracy rumor: 0.693
+test: micro f1 stance:0.661 macro f1 stance:0.228 accuracy stance: 0.661
+end of epoch: 23 avg total cost: -8725.133
+test: micro f1 rumor:0.773 macro f1 rumor:0.696 accuracy rumor: 0.773
+test: micro f1 stance:0.631 macro f1 stance:0.194 accuracy stance: 0.631
+end of epoch: 24 avg total cost: -11017.326
+test: micro f1 rumor:0.733 macro f1 rumor:0.610 accuracy rumor: 0.733
+test: micro f1 stance:0.658 macro f1 stance:0.214 accuracy stance: 0.658
+end of epoch: 25 avg total cost: -13197.040
+test: micro f1 rumor:0.773 macro f1 rumor:0.648 accuracy rumor: 0.773
+test: micro f1 stance:0.642 macro f1 stance:0.198 accuracy stance: 0.642
+end of epoch: 26 avg total cost: -15914.290
+test: micro f1 rumor:0.733 macro f1 rumor:0.674 accuracy rumor: 0.733
+test: micro f1 stance:0.664 macro f1 stance:0.199 accuracy stance: 0.664
+end of epoch: 27 avg total cost: -18763.921
+test: micro f1 rumor:0.693 macro f1 rumor:0.548 accuracy rumor: 0.693
+test: micro f1 stance:0.630 macro f1 stance:0.193 accuracy stance: 0.630
+end of epoch: 28 avg total cost: -22678.369
+test: micro f1 rumor:0.760 macro f1 rumor:0.670 accuracy rumor: 0.760
+test: micro f1 stance:0.697 macro f1 stance:0.302 accuracy stance: 0.697
+end of epoch: 29 avg total cost: -26643.535
+test: micro f1 rumor:0.680 macro f1 rumor:0.572 accuracy rumor: 0.680
+test: micro f1 stance:0.651 macro f1 stance:0.199 accuracy stance: 0.651
+end of epoch: 30 avg total cost: -30772.382
+test: micro f1 rumor:0.813 macro f1 rumor:0.718 accuracy rumor: 0.813
+test: micro f1 stance:0.639 macro f1 stance:0.195 accuracy stance: 0.639
+end of epoch: 31 avg total cost: -35536.085
+test: micro f1 rumor:0.747 macro f1 rumor:0.669 accuracy rumor: 0.747
+test: micro f1 stance:0.661 macro f1 stance:0.250 accuracy stance: 0.661
+end of epoch: 32 avg total cost: -41497.216
+test: micro f1 rumor:0.733 macro f1 rumor:0.647 accuracy rumor: 0.733
+test: micro f1 stance:0.641 macro f1 stance:0.195 accuracy stance: 0.641
+end of epoch: 33 avg total cost: -47844.511
+test: micro f1 rumor:0.600 macro f1 rumor:0.590 accuracy rumor: 0.600
+test: micro f1 stance:0.643 macro f1 stance:0.294 accuracy stance: 0.643
+end of epoch: 34 avg total cost: -52831.611
+test: micro f1 rumor:0.627 macro f1 rumor:0.518 accuracy rumor: 0.627
+test: micro f1 stance:0.649 macro f1 stance:0.197 accuracy stance: 0.649
+end of epoch: 35 avg total cost: -60433.267
+test: micro f1 rumor:0.587 macro f1 rumor:0.576 accuracy rumor: 0.587
+test: micro f1 stance:0.663 macro f1 stance:0.275 accuracy stance: 0.663
+end of epoch: 36 avg total cost: -70263.233
+test: micro f1 rumor:0.520 macro f1 rumor:0.499 accuracy rumor: 0.520
+test: micro f1 stance:0.674 macro f1 stance:0.302 accuracy stance: 0.674
+end of epoch: 37 avg total cost: -77819.039
+test: micro f1 rumor:0.587 macro f1 rumor:0.561 accuracy rumor: 0.587
+test: micro f1 stance:0.646 macro f1 stance:0.196 accuracy stance: 0.646
+end of epoch: 38 avg total cost: -87300.459
+test: micro f1 rumor:0.733 macro f1 rumor:0.684 accuracy rumor: 0.733
+test: micro f1 stance:0.486 macro f1 stance:0.260 accuracy stance: 0.486
+end of epoch: 39 avg total cost: -96510.588
+test: micro f1 rumor:0.680 macro f1 rumor:0.594 accuracy rumor: 0.680
+test: micro f1 stance:0.644 macro f1 stance:0.206 accuracy stance: 0.644
+end of epoch: 40 avg total cost: -108394.626
+test: micro f1 rumor:0.733 macro f1 rumor:0.660 accuracy rumor: 0.733
+test: micro f1 stance:0.513 macro f1 stance:0.306 accuracy stance: 0.513
+end of epoch: 41 avg total cost: -121297.730
+test: micro f1 rumor:0.680 macro f1 rumor:0.609 accuracy rumor: 0.680
+test: micro f1 stance:0.468 macro f1 stance:0.238 accuracy stance: 0.468
+end of epoch: 42 avg total cost: -131083.192
+test: micro f1 rumor:0.680 macro f1 rumor:0.597 accuracy rumor: 0.680
+test: micro f1 stance:0.537 macro f1 stance:0.261 accuracy stance: 0.537
+end of epoch: 43 avg total cost: -147530.232
+test: micro f1 rumor:0.747 macro f1 rumor:0.646 accuracy rumor: 0.747
+test: micro f1 stance:0.661 macro f1 stance:0.263 accuracy stance: 0.661
+end of epoch: 44 avg total cost: -159765.961
+test: micro f1 rumor:0.693 macro f1 rumor:0.636 accuracy rumor: 0.693
+test: micro f1 stance:0.681 macro f1 stance:0.311 accuracy stance: 0.681
+end of epoch: 45 avg total cost: -178660.768
+test: micro f1 rumor:0.693 macro f1 rumor:0.605 accuracy rumor: 0.693
+test: micro f1 stance:0.647 macro f1 stance:0.197 accuracy stance: 0.647
+end of epoch: 46 avg total cost: -192496.806
+test: micro f1 rumor:0.773 macro f1 rumor:0.706 accuracy rumor: 0.773
+test: micro f1 stance:0.664 macro f1 stance:0.200 accuracy stance: 0.664
+end of epoch: 47 avg total cost: -213886.982
+test: micro f1 rumor:0.667 macro f1 rumor:0.601 accuracy rumor: 0.667
+test: micro f1 stance:0.626 macro f1 stance:0.192 accuracy stance: 0.626
+end of epoch: 48 avg total cost: -233120.628
+test: micro f1 rumor:0.667 macro f1 rumor:0.584 accuracy rumor: 0.667
+test: micro f1 stance:0.619 macro f1 stance:0.195 accuracy stance: 0.619
+end of epoch: 49 avg total cost: -246586.438
+test: micro f1 rumor:0.640 macro f1 rumor:0.563 accuracy rumor: 0.640
+test: micro f1 stance:0.653 macro f1 stance:0.198 accuracy stance: 0.653
+end of epoch: 50 avg total cost: -273672.833
+test: micro f1 rumor:0.720 macro f1 rumor:0.673 accuracy rumor: 0.720
+test: micro f1 stance:0.644 macro f1 stance:0.196 accuracy stance: 0.644
+final test: micro f1 rumor:0.640 macro f1 rumor:0.539 accuracy rumor: 0.640
+final test: micro f1 stance:0.681 macro f1 stance:0.311 accuracy stance: 0.681
+classification report best micro rumor
+{
+  "macro avg": {
+    "precision": 0.553533789306147,
+    "recall": 0.5403425738111336,
+    "support": 75,
+    "f1-score": 0.5393817878028404
+  },
+  "1": {
+    "precision": 0.6341463414634146,
+    "recall": 0.7647058823529411,
+    "support": 34,
+    "f1-score": 0.6933333333333332
+  },
+  "micro avg": {
+    "precision": 0.64,
+    "recall": 0.64,
+    "support": 75,
+    "f1-score": 0.64
+  },
+  "2": {
+    "precision": 0.7407407407407407,
+    "recall": 0.6896551724137931,
+    "support": 29,
+    "f1-score": 0.7142857142857143
+  },
+  "weighted avg": {
+    "precision": 0.6196137135974534,
+    "recall": 0.64,
+    "support": 75,
+    "f1-score": 0.6241857978279031
+  },
+  "0": {
+    "precision": 0.2857142857142857,
+    "recall": 0.16666666666666666,
+    "support": 12,
+    "f1-score": 0.2105263157894737
+  }
+}
+classification report best macro rumor
+{
+  "macro avg": {
+    "precision": 0.553533789306147,
+    "recall": 0.5403425738111336,
+    "support": 75,
+    "f1-score": 0.5393817878028404
+  },
+  "1": {
+    "precision": 0.6341463414634146,
+    "recall": 0.7647058823529411,
+    "support": 34,
+    "f1-score": 0.6933333333333332
+  },
+  "micro avg": {
+    "precision": 0.64,
+    "recall": 0.64,
+    "support": 75,
+    "f1-score": 0.64
+  },
+  "2": {
+    "precision": 0.7407407407407407,
+    "recall": 0.6896551724137931,
+    "support": 29,
+    "f1-score": 0.7142857142857143
+  },
+  "weighted avg": {
+    "precision": 0.6196137135974534,
+    "recall": 0.64,
+    "support": 75,
+    "f1-score": 0.6241857978279031
+  },
+  "0": {
+    "precision": 0.2857142857142857,
+    "recall": 0.16666666666666666,
+    "support": 12,
+    "f1-score": 0.2105263157894737
+  }
+}
+classification report best micro stance
+{
+  "macro avg": {
+    "precision": 0.3404018547140649,
+    "recall": 0.3238226478358057,
+    "support": 1419,
+    "f1-score": 0.31058642150196436
+  },
+  "1": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "support": 97,
+    "f1-score": 0.0
+  },
+  "micro avg": {
+    "precision": 0.6814658210007047,
+    "recall": 0.6814658210007047,
+    "support": 1419,
+    "f1-score": 0.6814658210007047
+  },
+  "2": {
+    "precision": 0.6816074188562596,
+    "recall": 0.9671052631578947,
+    "support": 912,
+    "f1-score": 0.7996373526745241
+  },
+  "3": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "support": 151,
+    "f1-score": 0.0
+  },
+  "weighted avg": {
+    "precision": 0.5621888414354537,
+    "recall": 0.6814658210007047,
+    "support": 1419,
+    "f1-score": 0.5947362395859755
+  },
+  "0": {
+    "precision": 0.68,
+    "recall": 0.3281853281853282,
+    "support": 259,
+    "f1-score": 0.4427083333333333
+  }
+}
+classification report best macro stance
+{
+  "macro avg": {
+    "precision": 0.3404018547140649,
+    "recall": 0.3238226478358057,
+    "support": 1419,
+    "f1-score": 0.31058642150196436
+  },
+  "1": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "support": 97,
+    "f1-score": 0.0
+  },
+  "micro avg": {
+    "precision": 0.6814658210007047,
+    "recall": 0.6814658210007047,
+    "support": 1419,
+    "f1-score": 0.6814658210007047
+  },
+  "2": {
+    "precision": 0.6816074188562596,
+    "recall": 0.9671052631578947,
+    "support": 912,
+    "f1-score": 0.7996373526745241
+  },
+  "3": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "support": 151,
+    "f1-score": 0.0
+  },
+  "weighted avg": {
+    "precision": 0.5621888414354537,
+    "recall": 0.6814658210007047,
+    "support": 1419,
+    "f1-score": 0.5947362395859755
+  },
+  "0": {
+    "precision": 0.68,
+    "recall": 0.3281853281853282,
+    "support": 259,
+    "f1-score": 0.4427083333333333
+  }
+}

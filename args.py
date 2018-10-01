@@ -22,6 +22,6 @@ class Args:
 
         # self.model_type = 'mlt-us'
         # self.model_type = 'mlt-bow'
-        # self.model_type = 'mlt-user'
+        self.model_type = 'mlt-user'
 
         # self.model_type = 'single'
