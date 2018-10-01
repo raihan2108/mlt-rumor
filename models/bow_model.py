@@ -89,6 +89,12 @@ class BOWModel:
             max_stance_micro, max_stance_macro, max_stance_acc = 0., 0., 0.
             best_rumor_cost = 10000.0
             best_stance_cost = 10000.0
+
+            best_train_macro_rumor = 0.
+            best_train_macro_stance = 0.
+            best_train_micro_rumor = 0.
+            best_train_micro_stance = 0.
+
             for epi in range(1, self.epochs + 1):
                 global_cost = 0.
                 global_rumor_cost = 0.
@@ -163,18 +169,27 @@ class BOWModel:
                     self.log.debug('train: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))'''
                 if epi % self.test_interval == 0:
+                    train_micro_f1_rumor, train_macro_f1_rumor, train_acc_rumor, \
+                    train_micro_f1_stance, train_macro_f1_stance, train_acc_stance = self.test_model(sess, train_data_loader)
+
                     avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
                     avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = self.test_model(sess, test_data_loader)
 
-                    if global_rumor_cost < best_rumor_cost:
-                        best_rumor_cost = global_rumor_cost
+                    if train_macro_f1_rumor > best_train_macro_rumor:
+                        best_train_macro_rumor = train_macro_f1_rumor
                         max_rumor_macro = avg_macro_f1_rumor
+
+                    if train_micro_f1_rumor > best_train_micro_rumor:
+                        best_train_micro_rumor = train_micro_f1_rumor
                         max_rumor_micro = avg_micro_f1_rumor
                         max_rumor_acc = avg_acc_rumor
 
-                    if global_stance_cost < best_stance_cost:
-                        best_stance_cost = global_stance_cost
+                    if train_macro_f1_stance > best_train_macro_stance:
+                        best_train_macro_stance = train_macro_f1_stance
                         max_stance_macro = avg_macro_f1_stance
+
+                    if train_micro_f1_stance > best_train_micro_stance:
+                        best_train_micro_stance = train_micro_f1_stance
                         max_stance_micro = avg_micro_f1_stance
                         max_stance_acc = avg_acc_stance
 

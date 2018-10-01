@@ -177,8 +177,10 @@ class MLTUser:
             best_rumor_cost = 10000.0
             best_stance_cost = 10000.0
 
-            best_train_rumor = 0.
-            best_train_stance = 0.
+            best_train_macro_rumor = 0.
+            best_train_macro_stance = 0.
+            best_train_micro_rumor = 0.
+            best_train_micro_stance = 0.
 
             for epi in range(1, self.epochs + 1):
                 global_cost = 0.
@@ -273,15 +275,21 @@ class MLTUser:
                         max_stance_micro = avg_micro_f1_stance
                         max_stance_acc = avg_acc_stance'''
 
-                    if train_macro_f1_rumor > best_train_rumor:
-                        best_train_rumor = train_macro_f1_rumor
+                    if train_macro_f1_rumor > best_train_macro_rumor:
+                        best_train_macro_rumor = train_macro_f1_rumor
                         max_rumor_macro = avg_macro_f1_rumor
+                   
+                    if train_micro_f1_rumor > best_train_micro_rumor:
+                        best_train_micro_rumor = train_micro_f1_rumor
                         max_rumor_micro = avg_micro_f1_rumor
                         max_rumor_acc = avg_acc_rumor
 
-                    if train_macro_f1_stance > best_train_stance:
-                        best_train_stance = train_macro_f1_stance
+                    if train_macro_f1_stance > best_train_macro_stance:
+                        best_train_macro_stance = train_macro_f1_stance
                         max_stance_macro = avg_macro_f1_stance
+
+                    if train_micro_f1_stance > best_train_micro_stance:
+                        best_train_micro_stance = train_micro_f1_stance
                         max_stance_micro = avg_micro_f1_stance
                         max_stance_acc = avg_acc_stance
 
