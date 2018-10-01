@@ -20,7 +20,8 @@ class Args:
         self.train_performnace_epoch = 1
         self.test_epoch = 1
 
-        # self.mode_type = 'single'
-        self.model_type = 'mlt-us'
+        # self.model_type = 'mlt-us'
         # self.model_type = 'mlt-bow'
         # self.model_type = 'mlt-user'
+
+        # self.model_type = 'single'

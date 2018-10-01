@@ -1,14 +1,10 @@
-import copy
-import numpy as np
 import logging
 from sklearn.model_selection import train_test_split
 from args import Args
 # from utils import load_all_cascades, Corpus, Loader
-from utils import CoprpusVectorizer
 
 from data_utils import load_cascades, Loader
 
-from models.mlt_single import MLTSingle
 # from models.mlt_shared_rnn import MLTSharedRNN
 # from models.mlt_shared_mlp import MLTSharedMLP
 from models.mlt_us import MLT_US
