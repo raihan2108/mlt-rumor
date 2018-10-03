@@ -1,3 +1,4 @@
+import json
 
 
 class Args:
@@ -26,3 +27,19 @@ class Args:
         # self.model_type = 'mlt-single'
 
         # self.model_type = 'bow'
+
+    def __str__(self):
+        param_dict = {
+            'batch_size': self.batch_size,
+            'state_size': self.state_size,
+            'emb_size': self.emb_size,
+            'learning_rate': self.learning_rate,
+            'cell_type': self.cell_type,
+            'vae_latent_size': self.vae_latent_size,
+            'vae_encoder_size': self.vae_encoder_size,
+            'vae_decoder_size': self.vae_decoder_size,
+            'seq_len': self.seq_len,
+            'vocab_size': self.vocab_size
+        }
+
+        return json.dumps(param_dict, indent=2)

@@ -1,5 +1,7 @@
 import logging
 from sklearn.model_selection import train_test_split
+from datetime import datetime
+
 from args import Args
 # from utils import load_all_cascades, Corpus, Loader
 
@@ -16,8 +18,8 @@ dataset_name = 'pheme'            # pheme
 
 if __name__ == '__main__':
     options = Args()
-
-    handler = logging.FileHandler('{}-{}-{}.log'.format(options.main, options.model_type, dataset_name), 'w')
+    start_time = datetime.now().strftime("%y-%m-%d %H:%M:%S")
+    handler = logging.FileHandler('{}-{}-{}-{}.log'.format(options.main, options.model_type, dataset_name, start_time), 'w')
     log = logging.getLogger(options.main)
     log.addHandler(handler)
     log.setLevel(logging.DEBUG)
@@ -36,6 +38,9 @@ if __name__ == '__main__':
     options.seq_len = tweet_vec.shape[1]
     options.vocab_size = tweet_vec.shape[2]
     options.user_feat_size = user_feat.shape[2]
+
+    log.debug(str(options))
+
     train_data_loader = Loader(train_data_np, train_rumor_np, train_stance_np, train_seq_len_np, train_user_feat_np, options=options)
     test_data_loader = Loader(test_data_np, test_rumor_np, test_stance_np, test_seq_len_np, test_user_feat_np, options=options)
     val_data_loader = Loader(val_data_np, val_rumor_np, val_stance_np, val_seq_len_np, val_user_feat_np,
