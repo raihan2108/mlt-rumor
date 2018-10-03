@@ -5,7 +5,7 @@ from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import f1_score, accuracy_score
+from sklearn.metrics import f1_score, accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from nltk.tokenize import word_tokenize
 
@@ -17,7 +17,7 @@ def tag_docs(tweet, label):
 
 
 def baseline_model(clf_name='nb'):
-    all_conv = load_all_cascades('../cascades')
+    all_conv = load_all_cascades('../pheme_cascades')
     '''corpus = Corpus()
     data_np, lengths_np, labels_np = corpus.tokenize(all_conv)'''
     tweets = [c['text'] for c in all_conv]
@@ -35,14 +35,14 @@ def baseline_model(clf_name='nb'):
     model.build_vocab(tagged_tweet)
     print('vocabulary construction complete, start training')
     total_tokens = sum([len(sentence[0]) for sentence in X_train])
-    for epoch in range(10):
+    for epoch in range(20):
         model.train(X_train, total_examples=len(X_train),
                     total_words=total_tokens, epochs=model.iter)
         model.alpha -= 0.002  # decrease the learning rate
         model.min_alpha = model.alpha
         print('end of epoch ' + str(epoch + 1))
-    X = []
 
+    X = []
     for sentence in X_test:
         tokens = sentence[0]
         doc_vec = model.infer_vector(tokens)
@@ -72,11 +72,17 @@ def baseline_model(clf_name='nb'):
     clf_stance.fit(X, y_stance)
     y_pred_stance = clf_stance.predict(X)
 
-    print('rumor: micro f1 score: %0.4f' % f1_score(y_rumor, y_pred_rumor, average='micro'))
+    '''print('rumor: micro f1 score: %0.4f' % f1_score(y_rumor, y_pred_rumor, average='micro'))
     print('rumor: macro f1 score: %0.4f' % f1_score(y_rumor, y_pred_rumor, average='macro'))
 
     print('stance: micro f1 score: %0.4f' % f1_score(y_stance, y_pred_stance, average='micro'))
-    print('stance: macro f1 score: %0.4f' % f1_score(y_stance, y_pred_stance, average='macro'))
+    print('stance: macro f1 score: %0.4f' % f1_score(y_stance, y_pred_stance, average='macro'))'''
+    cr_rumor = classification_report(y_rumor, y_pred_rumor, output_dict=True)
+    cr_stance = classification_report(y_stance, y_pred_stance, output_dict=True)
+
+    from pprint import pprint
+    pprint(cr_rumor)
+    pprint(cr_stance)
 
 
 if __name__ == '__main__':

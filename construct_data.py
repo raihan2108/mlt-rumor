@@ -136,12 +136,16 @@ def sort_cascade(seq):
 
 def collect_user_feat(entry):
     u_feat = dict()
+    ts = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(entry['created_at'], '%a %b %d %H:%M:%S +0000 %Y'))
     u_feat['user_id'] = entry['id_str']
     u_feat['followers_count'] = entry['followers_count']
     u_feat['statuses_count'] = entry['statuses_count']
     u_feat['friends_count'] = entry['friends_count']
     u_feat['verified'] = entry['verified']
     u_feat['listed_count'] = entry['listed_count']
+    u_feat['reg_time'] = ts
+    u_feat['description'] = entry['description']
+    u_feat['url'] = entry['url']
 
     return u_feat
 
@@ -254,9 +258,9 @@ def process_thread(thread_dir):
     w_entry['cascade'] = []
     for i in range(0, len(sorted_cascade)):
         w_entry['cascade'].append(sorted_cascade[i])
-    if not exists(join('cascades', event)):
-        makedirs(join('cascades', event))
-    with open(join('cascades', event, thread + '.json'), 'w+') as write_file:
+    if not exists(join('pheme_cascades', event)):
+        makedirs(join('pheme_cascades', event))
+    with open(join('pheme_cascades', event, thread + '.json'), 'w+') as write_file:
         json.dump(w_entry, write_file, indent=2)
 
 
