@@ -18,6 +18,7 @@ def get_cascade_info(data_path):
     for ev in events:
         thread_names = os.listdir(os.path.join(data_path, ev))
         for th in thread_names:
+            # print(data_path, ev, th)
             json_data = json.load(open(os.path.join(data_path, ev, th)))
             if len(json_data['cascade']) > max_cas_length:
                 max_cas_length = len(json_data['cascade'])
@@ -78,6 +79,18 @@ def load_cascades(data_path):
                 else:
                     user_feat_numpy[tc, i, 4] = np.log(user_info['listed_count'] )
 
+                if user_info['verified'] is not None:  # 4
+                    user_feat_numpy[tc, i, 5] = 1
+                else:
+                    user_feat_numpy[tc, i, 5] = 0
+                if user_info['description'] is not None:  # 5
+                    user_feat_numpy[tc, i, 6] = 1
+                else:
+                    user_feat_numpy[tc, i, 6] = 0
+                if user_info['url'] is not None:  # 6
+                    user_feat_numpy[tc, i, 7] = 1
+                else:
+                    user_feat_numpy[tc, i, 7] = 0
                 '''tid = cas['tweet_id']
                 entry['text'] = tweet.lower()
                 entry['stance_label'] = a_stance_label

@@ -34,11 +34,6 @@ class MLTUser:
         self.init_variables()
         self.build_graph()
 
-    def xavier_init(fan_in, fan_out, constant=1):
-        low = -constant * np.sqrt(6.0 / (fan_in + fan_out))
-        high = constant * np.sqrt(6.0 / (fan_in + fan_out))
-        return tf.random_uniform((fan_in, fan_out), minval=low, maxval=high, dtype=tf.float32)
-
     def init_variables(self):
         self.tweet_vec = tf.placeholder(shape=[self.batch_size, self.max_seq_len, self.vocab_size], dtype=tf.float32)
         self.seq_len = tf.placeholder(shape=[self.batch_size], dtype=tf.int32)
@@ -70,6 +65,7 @@ class MLTUser:
 
     def construct_vae(self):
         with tf.variable_scope('user-vae'):
+            # mask = tf.sequence_mask(lengths=self.seq_len, maxlen=self.max_seq_len, dtype=tf.float32)
             l2_loss = tf.constant(0.0)  # l2 norm
             l2_loss += tf.nn.l2_loss(self.vae_weights["encoder_h1"])
             hidden_encoder = tf.nn.relu(tf.add(tf.tensordot(self.user_feat,
@@ -105,11 +101,6 @@ class MLTUser:
             self.vae_loss = tf.reduce_mean(tf.add(kl_divergence, bce))
             self.total_vae_cost = tf.add(self.vae_loss, tf.multiply(self.reg_coeff, l2_loss))
 
-    def _weight_and_bias(self, in_size, out_size):
-        weight = tf.truncated_normal([in_size, out_size], stddev=0.01)
-        bias = tf.constant(0.1, shape=[out_size])
-        return tf.Variable(weight), tf.Variable(bias)
-
     def build_graph(self):
         self.construct_vae()
 
@@ -118,19 +109,22 @@ class MLTUser:
                 self.rnn_cell_shared = tf.nn.rnn_cell.LSTMCell(self.state_size, state_is_tuple=True)
             else:
                 self.rnn_cell_shared = tf.nn.rnn_cell.GRUCell(self.state_size)
+                '''self.rnn_cell_shared = tf.contrib.rnn.DropoutWrapper(self.rnn_cell_shared, input_keep_prob=0.1,
+                                                          output_keep_prob=0.1)'''
             self.init_state_shared = self.rnn_cell_shared.zero_state(self.batch_size, tf.float32)
             self.shared_rnn_output, self.shared_hidden_state = \
                 tf.nn.dynamic_rnn(self.rnn_cell_shared, self.tweet_vec, self.seq_len, self.init_state_shared)
 
         with tf.variable_scope('rumor-clf'):
             if self.cell_type == 'lstm':
-                self.rumor_score = tf.layers.dense(inputs=self.shared_hidden_state.h, units=self.r_label_size,
+                self.input_feat_rumor = tf.concat([self.shared_hidden_state.h, self.z[:, 0, :]], axis=1)
+                self.rumor_score = tf.layers.dense(inputs=self.input_feat_rumor, units=self.r_label_size,
                     activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                                    bias_initializer=tf.constant_initializer(0.25))
             else:
+                self.input_feat_rumor = tf.concat([self.shared_hidden_state, self.z[:, 0, :]], axis=1)
                 self.rumor_score = tf.layers.dense(inputs=self.shared_hidden_state, units=self.r_label_size,
-                                                   activation=tf.nn.relu,
-                                                   kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                    activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                                    bias_initializer=tf.constant_initializer(0.25))
             rumor_true = tf.one_hot(tf.cast(self.rumor_output, dtype=tf.int32), self.r_label_size)
             self.rumor_label_cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits
@@ -139,9 +133,9 @@ class MLTUser:
 
         with tf.variable_scope('stance-clf'):
             self.input_feat = tf.concat([self.shared_rnn_output, self.z], axis=2)
-            weight, bias = self._weight_and_bias(self.state_size + self.vae_latent_size, self.s_label_size)
             output = tf.reshape(self.input_feat, [-1, self.state_size + self.vae_latent_size])
-            self.stance_score = (tf.matmul(output, weight) + bias)
+            self.stance_score = tf.layers.dense(inputs=output, units=self.s_label_size, activation=None,
+                kernel_initializer=tf.contrib.layers.xavier_initializer(), bias_initializer=tf.constant_initializer(0.25))
             self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
             self.stance_true = tf.one_hot(tf.cast(self.stance_output, dtype=tf.int32), self.s_label_size)
             self.temp_stance_cost = tf.nn.softmax_cross_entropy_with_logits(labels=self.stance_true, logits=self.stance_score, dim=2)
@@ -153,8 +147,10 @@ class MLTUser:
 
         if self.arch == 'joint':
             with tf.variable_scope('joint-opt'):
+                '''tv = tf.trainable_variables()
+                self.regularization_cost = tf.reduce_sum([tf.nn.l2_loss(v) for v in tv])'''
                 self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-                self.total_cost = self.rumor_label_cost + self.stance_label_cost + self.total_vae_cost
+                self.total_cost = self.rumor_label_cost + self.vae_loss + self.stance_label_cost # + self.reg_coeff * self.regularization_cost
                 self.train_op = self.optimizer.minimize(self.total_cost)
         else:
             with tf.variable_scope('rumor-opt'):
@@ -167,9 +163,9 @@ class MLTUser:
 
             with tf.variable_scope('vae-opt'):
                 self.vae_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-                self.vae_train_op = self.vae_optimizer.minimize(self.vae_optimizer)
+                self.vae_train_op = self.vae_optimizer.minimize(self.total_vae_cost)
 
-    def train_model(self, train_data_loader, test_data_loader):
+    def train_model(self, train_data_loader, test_data_loader, val_data_loader):
         # tf.reset_default_graph()
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
@@ -214,17 +210,24 @@ class MLTUser:
                         global_rumor_cost += rumor_cost
                         global_stance_cost += stance_cost
                     else:
+                        fd_vae = {
+                            self.user_feat: batch_user,
+                            self.seq_len: batch_length
+                        }
+                        _, vae_cost = sess.run([self.vae_train_op, self.total_vae_cost], feed_dict=fd_vae)
                         fd_rumor = {
                             self.tweet_vec: batch_data,
                             self.rumor_output: rumor_batch_label,
-                            self.seq_len: batch_length
+                            self.seq_len: batch_length,
+                            self.user_feat: batch_user,
                         }
                         _, rumor_cost = sess.run([self.rumor_train_op, self.rumor_label_cost], feed_dict=fd_rumor)
                         global_rumor_cost += rumor_cost
                         fd_stance = {
                             self.tweet_vec: batch_data,
                             self.stance_output: stance_batch_label,
-                            self.seq_len: batch_length
+                            self.seq_len: batch_length,
+                            self.user_feat: batch_user,
                         }
                         _, stance_cost = sess.run([self.stance_train_op, self.stance_label_cost], feed_dict=fd_stance)
                         global_stance_cost += stance_cost
@@ -239,10 +242,10 @@ class MLTUser:
 
                 if epi % self.display_interval == 0:
                     if self.arch == 'joint':
-                        print('end of epoch: {} avg total cost: {:0.3f}'.
-                              format(epi, global_cost))
-                        self.log.debug('end of epoch: {} avg total cost: {:0.3f}'.
-                              format(epi, global_cost))
+                        print('end of epoch: {} avg total cost: {:0.3f} avg rumor cost: {:0.3f} avg stance cost: {:0.3f}'.
+                              format(epi, global_cost, global_rumor_cost, global_stance_cost))
+                        self.log.debug('end of epoch: {} avg total cost: {:0.3f} avg rumor cost: {:0.3f} avg stance cost: {:0.3f}'.
+                              format(epi, global_cost, global_rumor_cost, global_stance_cost))
                     else:
                         print('end of epoch: {} avg rumor cost: {:0.3f} avg stance cost: {:0.3f}'.
                             format(epi, global_rumor_cost, global_stance_cost))
@@ -262,7 +265,7 @@ class MLTUser:
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))'''
 
                 if epi % self.test_interval == 0:
-                    '''train_micro_f1_rumor, train_macro_f1_rumor, train_acc_rumor, \
+                    '''val_micro_f1_rumor, _macro_f1_rumor, train_acc_rumor, \
                     train_micro_f1_stance, train_macro_f1_stance, train_acc_stance = self.test_model(sess, train_data_loader)'''
 
                     '''avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
@@ -278,7 +281,7 @@ class MLTUser:
                         max_stance_macro = avg_macro_f1_stance
                         max_stance_micro = avg_micro_f1_stance
                         max_stance_acc = avg_acc_stance'''
-                    cr_rumor_train, cr_stance_train = self.test_model(sess, train_data_loader)
+                    cr_rumor_val, cr_stance_val = self.test_model(sess, val_data_loader)
                     cr_rumor_test, cr_stance_test = self.test_model(sess, test_data_loader)
 
                     avg_micro_f1_rumor = cr_rumor_test['micro avg']['f1-score']
@@ -289,32 +292,41 @@ class MLTUser:
                     avg_macro_f1_stance = cr_stance_test['macro avg']['f1-score']
                     avg_acc_stance = cr_stance_test['micro avg']['f1-score']
 
-                    train_macro_f1_rumor = cr_rumor_train['macro avg']['f1-score']
-                    train_micro_f1_rumor = cr_rumor_train['micro avg']['f1-score']
-                    train_macro_f1_stance = cr_stance_train['macro avg']['f1-score']
-                    train_micro_f1_stance = cr_stance_train['micro avg']['f1-score']
+                    val_macro_f1_rumor = cr_rumor_val['macro avg']['f1-score']
+                    val_micro_f1_rumor = cr_rumor_val['micro avg']['f1-score']
+                    val_macro_f1_stance = cr_stance_val['macro avg']['f1-score']
+                    val_micro_f1_stance = cr_stance_val['micro avg']['f1-score']
 
-                    if train_macro_f1_rumor > best_train_macro_rumor:
-                        best_train_macro_rumor = train_macro_f1_rumor
+                    if val_macro_f1_rumor > best_train_macro_rumor:
+                        best_train_macro_rumor = val_macro_f1_rumor
                         max_rumor_macro = cr_rumor_test['macro avg']['f1-score']
                         max_cr_macro_rumor = cr_rumor_test
                    
-                    if train_micro_f1_rumor > best_train_micro_rumor:
-                        best_train_micro_rumor = train_micro_f1_rumor
+                    if val_micro_f1_rumor > best_train_micro_rumor:
+                        best_train_micro_rumor = val_micro_f1_rumor
                         max_rumor_micro = cr_rumor_test['micro avg']['f1-score']
                         max_rumor_acc = cr_rumor_test['micro avg']['f1-score']
                         max_cr_micro_rumor = cr_rumor_test
 
-                    if train_macro_f1_stance > best_train_macro_stance:
-                        best_train_macro_stance = train_macro_f1_stance
+                    if val_macro_f1_stance > best_train_macro_stance:
+                        best_train_macro_stance = val_macro_f1_stance
                         max_stance_macro = cr_stance_test['macro avg']['f1-score']
                         max_cr_macro_stance = cr_stance_test
 
-                    if train_micro_f1_stance > best_train_micro_stance:
-                        best_train_micro_stance = train_micro_f1_stance
+                    if val_micro_f1_stance > best_train_micro_stance:
+                        best_train_micro_stance = val_micro_f1_stance
                         max_stance_micro = cr_stance_test['micro avg']['f1-score']
                         max_stance_acc = cr_stance_test['micro avg']['f1-score']
                         max_cr_micro_stance = cr_stance_test
+
+                    print('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                          format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
+                    self.log.debug('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                          format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
+                    print('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                          format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
+                    self.log.debug('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                          format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
 
                     print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                           format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))

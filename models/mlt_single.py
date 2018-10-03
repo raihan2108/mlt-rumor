@@ -1,10 +1,12 @@
+import json
 import logging
 import numpy as np
 import tensorflow as tf
 from sklearn.metrics import f1_score, accuracy_score
+from sklearn.metrics import classification_report
 
 
-class MLT_US:
+class MLT_Single:
     def __init__(self, options):
         self.batch_size = options.batch_size
         self.max_seq_len = options.seq_len
@@ -75,7 +77,7 @@ class MLT_US:
                                                    (logits=self.rumor_score, labels=rumor_true))
             self.pred_rumor_label = tf.cast(tf.argmax(self.rumor_score, axis=1), dtype=tf.int32)
 
-        with tf.variable_scope('stance-clf'):
+        '''with tf.variable_scope('stance-clf'):
             weight, bias = self._weight_and_bias(self.state_size, self.s_label_size)
             output = tf.reshape(self.shared_rnn_output, [-1, self.state_size])
             self.stance_score = (tf.matmul(output, weight) + bias)
@@ -86,21 +88,21 @@ class MLT_US:
             self.temp_stance_cost *= mask
             self.stance_label_cost = tf.reduce_mean(self.temp_stance_cost)
             # self.stance_label_cost = self.cost()
-            self.pred_stance_label = tf.cast(tf.argmax(self.stance_score, axis=2), dtype=tf.int32)
+            self.pred_stance_label = tf.cast(tf.argmax(self.stance_score, axis=2), dtype=tf.int32)'''
 
         if self.arch == 'joint':
             with tf.variable_scope('joint-opt'):
                 self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-                self.total_cost = self.rumor_label_cost + self.stance_label_cost
+                self.total_cost = self.rumor_label_cost    # + self.stance_label_cost
                 self.train_op = self.optimizer.minimize(self.total_cost)
         else:
             with tf.variable_scope('rumor-opt'):
                 self.rumor_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
                 self.rumor_train_op = self.rumor_optimizer.minimize(self.rumor_label_cost)
 
-            with tf.variable_scope('stance-opt'):
+            '''with tf.variable_scope('stance-opt'):
                 self.stance_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
-                self.stance_train_op = self.stance_optimizer.minimize(self.stance_label_cost)
+                self.stance_train_op = self.stance_optimizer.minimize(self.stance_label_cost)'''
 
     def train_model(self, train_data_loader, test_data_loader):
         # tf.reset_default_graph()
@@ -109,15 +111,24 @@ class MLT_US:
             sess.run(init)
             max_rumor_micro, max_rumor_macro, max_rumor_acc = 0., 0., 0.
             max_stance_micro, max_stance_macro, max_stance_acc = 0., 0., 0.
+            max_cr_micro_rumor, max_cr_macro_rumor = None, None
+            max_cr_micro_stance, max_cr_macro_stance = None, None
+            best_rumor_cost = 10000.0
+            best_stance_cost = 10000.0
+
+            best_train_macro_rumor = 0.
+            best_train_macro_stance = 0.
+            best_train_micro_rumor = 0.
+            best_train_micro_stance = 0.
+
             for epi in range(1, self.epochs + 1):
-                if self.arch == 'joint':
-                    global_cost = 0.
-                else:
-                    global_rumor_cost = 0.
-                    global_stance_cost = 0.
+                global_cost = 0.
+                global_rumor_cost = 0.
+                global_stance_cost = 0.
                 n_batches = len(train_data_loader)
+
                 for i in range(0, n_batches):
-                    batch_data, rumor_batch_label, stance_batch_label, batch_length = train_data_loader()
+                    batch_data, rumor_batch_label, stance_batch_label, batch_length, _ = train_data_loader()
                     if batch_data.shape[0] < self.batch_size:
                         continue
                     if self.arch == 'joint':
@@ -127,11 +138,14 @@ class MLT_US:
                             self.stance_output: stance_batch_label,
                             self.seq_len: batch_length
                         }
-                        _, total_cost = sess.run([self.train_op, self.total_cost], feed_dict=fd_all)
+                        _, total_cost, rumor_cost = sess.run([self.train_op, self.total_cost,
+                                                    self.rumor_label_cost], feed_dict=fd_all)
                         '''output_state, hidden_state = \
                             sess.run([self.shared_hidden_state, self.shared_rnn_output], feed_dict=fd_all)'''
 
                         global_cost += total_cost
+                        global_rumor_cost += rumor_cost
+                        # global_stance_cost += stance_cost
                     else:
                         fd_rumor = {
                             self.tweet_vec: batch_data,
@@ -140,16 +154,19 @@ class MLT_US:
                         }
                         _, rumor_cost = sess.run([self.rumor_train_op, self.rumor_label_cost], feed_dict=fd_rumor)
                         global_rumor_cost += rumor_cost
-                        fd_stance = {
+
+                        '''fd_stance = {
                             self.tweet_vec: batch_data,
                             self.stance_output: stance_batch_label,
                             self.seq_len: batch_length
                         }
                         _, stance_cost = sess.run([self.stance_train_op, self.stance_label_cost], feed_dict=fd_stance)
-                        global_stance_cost += stance_cost
+                        global_stance_cost += stance_cost'''
 
                 if self.arch == 'joint':
                     global_cost /= n_batches
+                    global_rumor_cost /= n_batches
+                    global_stance_cost /= n_batches
                 else:
                     global_rumor_cost /= n_batches
                     global_stance_cost /= n_batches
@@ -179,24 +196,99 @@ class MLT_US:
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))'''
 
                 if epi % self.test_interval == 0:
-                    avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
-                    avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = self.test_model(sess, test_data_loader)
+                    '''train_micro_f1_rumor, train_macro_f1_rumor, train_acc_rumor, \
+                    train_micro_f1_stance, train_macro_f1_stance, train_acc_stance = self.test_model(sess, train_data_loader)'''
+
+                    '''avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
+                    avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = self.test_model(sess, test_data_loader)'''
+
+                    '''if global_rumor_cost < best_rumor_cost:
+                        best_rumor_cost = global_rumor_cost
+                        max_rumor_macro = avg_macro_f1_rumor
+                        max_rumor_micro = avg_micro_f1_rumor
+                        max_rumor_acc = avg_acc_rumor
+                    if global_stance_cost < best_stance_cost:
+                        best_stance_cost = global_stance_cost
+                        max_stance_macro = avg_macro_f1_stance
+                        max_stance_micro = avg_micro_f1_stance
+                        max_stance_acc = avg_acc_stance'''
+                    cr_rumor_train = self.test_model(sess, train_data_loader)
+                    cr_rumor_test = self.test_model(sess, test_data_loader)
+
+                    avg_micro_f1_rumor = cr_rumor_test['micro avg']['f1-score']
+                    avg_macro_f1_rumor = cr_rumor_test['macro avg']['f1-score']
+                    avg_acc_rumor = cr_rumor_test['micro avg']['f1-score']
+
+                    # avg_micro_f1_stance = cr_stance_test['micro avg']['f1-score']
+                    # avg_macro_f1_stance = cr_stance_test['macro avg']['f1-score']
+                    # avg_acc_stance = cr_stance_test['micro avg']['f1-score']
+
+                    train_macro_f1_rumor = cr_rumor_train['macro avg']['f1-score']
+                    train_micro_f1_rumor = cr_rumor_train['micro avg']['f1-score']
+                    # train_macro_f1_stance = cr_stance_train['macro avg']['f1-score']
+                    # train_micro_f1_stance = cr_stance_train['micro avg']['f1-score']
+
+                    if train_macro_f1_rumor > best_train_macro_rumor:
+                        best_train_macro_rumor = train_macro_f1_rumor
+                        max_rumor_macro = cr_rumor_test['macro avg']['f1-score']
+                        max_cr_macro_rumor = cr_rumor_test
+
+                    if train_micro_f1_rumor > best_train_micro_rumor:
+                        best_train_micro_rumor = train_micro_f1_rumor
+                        max_rumor_micro = cr_rumor_test['micro avg']['f1-score']
+                        max_rumor_acc = cr_rumor_test['micro avg']['f1-score']
+                        max_cr_micro_rumor = cr_rumor_test
+
+                    '''if train_macro_f1_stance > best_train_macro_stance:
+                        best_train_macro_stance = train_macro_f1_stance
+                        max_stance_macro = cr_stance_test['macro avg']['f1-score']
+                        max_cr_macro_stance = cr_stance_test
+
+                    if train_micro_f1_stance > best_train_micro_stance:
+                        best_train_micro_stance = train_micro_f1_stance
+                        max_stance_micro = cr_stance_test['micro avg']['f1-score']
+                        max_stance_acc = cr_stance_test['micro avg']['f1-score']
+                        max_cr_micro_stance = cr_stance_test'''
 
                     print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                           format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
                     self.log.debug('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
-                          format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
-                    print('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                                   format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
+                    '''print('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                           format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
                     self.log.debug('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
-                          format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
+                                   format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))'''
+
+        print('final test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+              format(max_rumor_micro, max_rumor_macro, max_rumor_acc))
+        self.log.debug('final test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                       format(max_rumor_micro, max_rumor_macro, max_rumor_acc))
+        print('final test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+              format(max_stance_micro, max_stance_macro, max_stance_acc))
+        self.log.debug('final test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                       format(max_stance_micro, max_stance_macro, max_stance_acc))
+
+        self.log.debug('classification report best micro rumor')
+        self.log.debug(json.dumps(max_cr_micro_rumor, indent=2))
+        self.log.debug('classification report best macro rumor')
+        self.log.debug(json.dumps(max_cr_macro_rumor, indent=2))
+
+        self.log.debug('classification report best micro stance')
+        self.log.debug(json.dumps(max_cr_micro_stance, indent=2))
+        self.log.debug('classification report best macro stance')
+        self.log.debug(json.dumps(max_cr_macro_stance, indent=2))
 
     def test_model(self, sess: tf.Session, data_loader):
         n_batches = len(data_loader)
         avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor = 0., 0., 0.
         avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance = 0., 0., 0.
+        all_pred_rumor = list()
+        all_true_rumor = list()
+        all_pred_stance = list()
+        all_true_stance = list()
+
         for i in range(0, n_batches):
-            batch_data, rumor_batch_label, stance_batch_label, batch_length = data_loader()
+            batch_data, rumor_batch_label, stance_batch_label, batch_length, _ = data_loader()
             if batch_data.shape[0] < self.batch_size:
                 continue
             fd_rumor = {
@@ -205,22 +297,28 @@ class MLT_US:
                 self.seq_len: batch_length
             }
             pred_rumor = sess.run(self.pred_rumor_label, feed_dict=fd_rumor)
-            micro_f1_rumor = f1_score(rumor_batch_label, pred_rumor, average='micro')
+            all_pred_rumor.extend(pred_rumor.tolist())
+            all_true_rumor.extend(rumor_batch_label.tolist())
+
+            '''micro_f1_rumor = f1_score(rumor_batch_label, pred_rumor, average='micro')
             macro_f1_rumor = f1_score(rumor_batch_label, pred_rumor, average='macro')
             acc_rumor = accuracy_score(rumor_batch_label, pred_rumor)
 
             avg_macro_f1_rumor += macro_f1_rumor
             avg_micro_f1_rumor += micro_f1_rumor
-            avg_acc_rumor += acc_rumor
+            avg_acc_rumor += acc_rumor'''
 
-            fd_stance = {
+            '''fd_stance = {
                 self.tweet_vec: batch_data,
                 self.stance_output: stance_batch_label,
                 self.seq_len: batch_length
             }
             pred_stance = sess.run(self.pred_stance_label, feed_dict=fd_stance)
-            temp_macro_f1_stance, temp_micro_f1_stance, temp_acc_stance = 0., 0., 0.
+            # temp_macro_f1_stance, temp_micro_f1_stance, temp_acc_stance = 0., 0., 0.
             for b in range(0, self.batch_size):
+                all_true_stance.extend(stance_batch_label[b, 0: batch_length[b]].tolist())
+                all_pred_stance.extend(pred_stance[b, 0: batch_length[b]].tolist())'''
+            '''for b in range(0, self.batch_size):
                 micro_f1_stance = f1_score(stance_batch_label[b, 0: batch_length[b]],
                                            pred_stance[b, 0: batch_length[b]], average='micro')
                 macro_f1_stance = f1_score(stance_batch_label[b, 0: batch_length[b]],
@@ -234,15 +332,24 @@ class MLT_US:
 
             avg_macro_f1_stance += (temp_macro_f1_stance / self.batch_size)
             avg_micro_f1_stance += (temp_micro_f1_stance / self.batch_size)
-            avg_acc_stance += (temp_acc_stance / self.batch_size)
+            avg_acc_stance += (temp_acc_stance / self.batch_size)'''
 
-        avg_macro_f1_rumor /= n_batches
+        '''avg_macro_f1_rumor /= n_batches
         avg_micro_f1_rumor /= n_batches
         avg_acc_rumor /= n_batches
 
         avg_macro_f1_stance /= n_batches
         avg_micro_f1_stance /= n_batches
-        avg_acc_stance /= n_batches
+        avg_acc_stance /= n_batches'''
 
-        return avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \
-               avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance
+        '''avg_micro_f1_rumor = f1_score(y_true=all_true_rumor, y_pred=all_pred_rumor, average='micro')
+        avg_macro_f1_rumor = f1_score(y_true=all_true_rumor, y_pred=all_pred_rumor, average='macro')
+        avg_acc_rumor = accuracy_score(y_true=all_true_rumor, y_pred=all_pred_rumor)
+
+        avg_micro_f1_stance = f1_score(y_true=all_true_stance, y_pred=all_pred_stance, average='micro')
+        avg_macro_f1_stance = f1_score(y_true=all_true_stance, y_pred=all_pred_stance, average='macro')
+        avg_acc_stance = accuracy_score(y_true=all_true_stance, y_pred=all_pred_stance)'''
+
+        cr_rumor = classification_report(y_true=all_true_rumor, y_pred=all_pred_rumor, output_dict=True)
+        # cr_stance = classification_report(y_true=all_true_stance, y_pred=all_pred_stance, output_dict=True)
+        return cr_rumor

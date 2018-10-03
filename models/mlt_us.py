@@ -104,7 +104,7 @@ class MLT_US:
                 self.stance_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
                 self.stance_train_op = self.stance_optimizer.minimize(self.stance_label_cost)
 
-    def train_model(self, train_data_loader, test_data_loader):
+    def train_model(self, train_data_loader, test_data_loader, val_data_loader):
         # tf.reset_default_graph()
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
@@ -212,7 +212,7 @@ class MLT_US:
                         max_stance_macro = avg_macro_f1_stance
                         max_stance_micro = avg_micro_f1_stance
                         max_stance_acc = avg_acc_stance'''
-                    cr_rumor_train, cr_stance_train = self.test_model(sess, train_data_loader)
+                    cr_rumor_val, cr_stance_val = self.test_model(sess, val_data_loader)
                     cr_rumor_test, cr_stance_test = self.test_model(sess, test_data_loader)
 
                     avg_micro_f1_rumor = cr_rumor_test['micro avg']['f1-score']
@@ -223,32 +223,41 @@ class MLT_US:
                     avg_macro_f1_stance = cr_stance_test['macro avg']['f1-score']
                     avg_acc_stance = cr_stance_test['micro avg']['f1-score']
 
-                    train_macro_f1_rumor = cr_rumor_train['macro avg']['f1-score']
-                    train_micro_f1_rumor = cr_rumor_train['micro avg']['f1-score']
-                    train_macro_f1_stance = cr_stance_train['macro avg']['f1-score']
-                    train_micro_f1_stance = cr_stance_train['micro avg']['f1-score']
+                    val_macro_f1_rumor = cr_rumor_val['macro avg']['f1-score']
+                    val_micro_f1_rumor = cr_rumor_val['micro avg']['f1-score']
+                    val_macro_f1_stance = cr_stance_val['macro avg']['f1-score']
+                    val_micro_f1_stance = cr_stance_val['micro avg']['f1-score']
 
-                    if train_macro_f1_rumor > best_train_macro_rumor:
-                        best_train_macro_rumor = train_macro_f1_rumor
+                    if val_macro_f1_rumor > best_train_macro_rumor:
+                        best_train_macro_rumor = val_macro_f1_rumor
                         max_rumor_macro = cr_rumor_test['macro avg']['f1-score']
                         max_cr_macro_rumor = cr_rumor_test
 
-                    if train_micro_f1_rumor > best_train_micro_rumor:
-                        best_train_micro_rumor = train_micro_f1_rumor
+                    if val_micro_f1_rumor > best_train_micro_rumor:
+                        best_train_micro_rumor = val_micro_f1_rumor
                         max_rumor_micro = cr_rumor_test['micro avg']['f1-score']
                         max_rumor_acc = cr_rumor_test['micro avg']['f1-score']
                         max_cr_micro_rumor = cr_rumor_test
 
-                    if train_macro_f1_stance > best_train_macro_stance:
-                        best_train_macro_stance = train_macro_f1_stance
+                    if val_macro_f1_stance > best_train_macro_stance:
+                        best_train_macro_stance = val_macro_f1_stance
                         max_stance_macro = cr_stance_test['macro avg']['f1-score']
                         max_cr_macro_stance = cr_stance_test
 
-                    if train_micro_f1_stance > best_train_micro_stance:
-                        best_train_micro_stance = train_micro_f1_stance
+                    if val_micro_f1_stance > best_train_micro_stance:
+                        best_train_micro_stance = val_micro_f1_stance
                         max_stance_micro = cr_stance_test['micro avg']['f1-score']
                         max_stance_acc = cr_stance_test['micro avg']['f1-score']
                         max_cr_micro_stance = cr_stance_test
+
+                    print('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                          format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
+                    self.log.debug('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                                   format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
+                    print('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                          format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
+                    self.log.debug('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                                   format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
 
                     print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                           format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
