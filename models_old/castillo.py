@@ -13,7 +13,7 @@ from sklearn.metrics import classification_report
 
 rumor_label = {'false': 0, 'true': 1, 'unverified': 2}
 stance_label = {'supporting': 0, 'denying': 1, 'comment': 2, 'appeal-for-more-information': 3}
-dataset_name = 'pheme_cascades'
+dataset_name = 'twitter_cascades'
 
 sid = SentimentIntensityAnalyzer()
 
@@ -33,29 +33,53 @@ def get_pos_neg_ratio(text: str):
 def calc_topic_feat(lang_feat_th, user_feat_th):
     topic_feat = list()
     topic_feat.append(len(lang_feat_th))
-    topic_feat.append(sum([a[0] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[1] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[2] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[3] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[4] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[5] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[6] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[7] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[8] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[9] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[10] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[11] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[12] for a in lang_feat_th]) / len(lang_feat_th))
-    topic_feat.append(sum([a[13] for a in lang_feat_th]) / len(lang_feat_th))
+    if len(lang_feat_th) != 0:
+        topic_feat.append(sum([a[0] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[1] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[2] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[3] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[4] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[5] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[6] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[7] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[8] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[9] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[10] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[11] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[12] for a in lang_feat_th]) / len(lang_feat_th))
+        topic_feat.append(sum([a[13] for a in lang_feat_th]) / len(lang_feat_th))
+    else:
+        topic_feat.append(sum([a[0] for a in lang_feat_th]))
+        topic_feat.append(sum([a[1] for a in lang_feat_th]))
+        topic_feat.append(sum([a[2] for a in lang_feat_th]))
+        topic_feat.append(sum([a[3] for a in lang_feat_th]))
+        topic_feat.append(sum([a[4] for a in lang_feat_th]))
+        topic_feat.append(sum([a[5] for a in lang_feat_th]))
+        topic_feat.append(sum([a[6] for a in lang_feat_th]))
+        topic_feat.append(sum([a[7] for a in lang_feat_th]))
+        topic_feat.append(sum([a[8] for a in lang_feat_th]))
+        topic_feat.append(sum([a[9] for a in lang_feat_th]))
+        topic_feat.append(sum([a[10] for a in lang_feat_th]))
+        topic_feat.append(sum([a[11] for a in lang_feat_th]))
+        topic_feat.append(sum([a[12] for a in lang_feat_th]))
+        topic_feat.append(sum([a[13] for a in lang_feat_th]))
 
-    topic_feat.append(sum([a[0] for a in user_feat_th]) / len(user_feat_th))
-    topic_feat.append(sum([a[1] for a in user_feat_th]) / len(user_feat_th))
-    topic_feat.append(sum([a[2] for a in user_feat_th]) / len(user_feat_th))
-    topic_feat.append(sum([a[3] for a in user_feat_th]) / len(user_feat_th))
-    topic_feat.append(sum([a[4] for a in user_feat_th]) / len(user_feat_th))
-    topic_feat.append(sum([a[5] for a in user_feat_th]) / len(user_feat_th))
-    topic_feat.append(sum([a[6] for a in user_feat_th]) / len(user_feat_th))
-
+    if len(user_feat_th) != 0:
+        topic_feat.append(sum([a[0] for a in user_feat_th]) / len(user_feat_th))
+        topic_feat.append(sum([a[1] for a in user_feat_th]) / len(user_feat_th))
+        topic_feat.append(sum([a[2] for a in user_feat_th]) / len(user_feat_th))
+        topic_feat.append(sum([a[3] for a in user_feat_th]) / len(user_feat_th))
+        topic_feat.append(sum([a[4] for a in user_feat_th]) / len(user_feat_th))
+        topic_feat.append(sum([a[5] for a in user_feat_th]) / len(user_feat_th))
+        topic_feat.append(sum([a[6] for a in user_feat_th]) / len(user_feat_th))
+    else:
+        topic_feat.append(sum([a[0] for a in user_feat_th]))
+        topic_feat.append(sum([a[1] for a in user_feat_th]))
+        topic_feat.append(sum([a[2] for a in user_feat_th]))
+        topic_feat.append(sum([a[3] for a in user_feat_th]))
+        topic_feat.append(sum([a[4] for a in user_feat_th]))
+        topic_feat.append(sum([a[5] for a in user_feat_th]))
+        topic_feat.append(sum([a[6] for a in user_feat_th]))
     return topic_feat
 
 
@@ -244,16 +268,16 @@ if __name__ == '__main__':
 
     X_train, X_test, y_train_rumor, y_test_rumor, y_train_stance, y_test_stance = \
         train_test_split(X, y_rumor, y_stance, test_size=0.2)
-    clf_rumor = tree.DecisionTreeClassifier(max_depth=3)
+    clf_rumor = SVC() # tree.DecisionTreeClassifier(max_depth=3)
     clf_rumor.fit(X_train, y_train_rumor)
-    clf_stance = tree.DecisionTreeClassifier(max_depth=1)
-    clf_stance.fit(X_train, y_train_stance)
+    #clf_stance = SVC() # tree.DecisionTreeClassifier(max_depth=1)
+    # clf_stance.fit(X_train, y_train_stance)
 
     y_pred_rumor = clf_rumor.predict(X_test)
-    y_pred_stance = clf_stance.predict(X_test)
+    # y_pred_stance = clf_stance.predict(X_test)
 
     cr_rumor = classification_report(y_test_rumor, y_pred_rumor, output_dict=True)
-    cr_stance = classification_report(y_test_stance, y_pred_stance, output_dict=True)
+    # cr_stance = classification_report(y_test_stance, y_pred_stance, output_dict=True)
 
     pprint(cr_rumor)
-    pprint(cr_stance)
+    # pprint(cr_stance)

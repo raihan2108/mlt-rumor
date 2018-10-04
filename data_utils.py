@@ -99,6 +99,7 @@ def load_cascades(data_path):
             tc += 1
     return all_tweet_numpy, rumor_label_numpy, stance_label_numpy, seq_len_numpy, user_feat_numpy
 
+
 class Loader:
     def __init__(self, data, rumor_label, stance_label, lengths, user_feat, options=None):
         self.batch_size = options.batch_size

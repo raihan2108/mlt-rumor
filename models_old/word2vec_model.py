@@ -17,7 +17,7 @@ def tag_docs(tweet, label):
 
 
 def baseline_model(clf_name='nb'):
-    all_conv = load_all_cascades('../pheme_cascades')
+    all_conv = load_all_cascades('../twitter_cascades')
     '''corpus = Corpus()
     data_np, lengths_np, labels_np = corpus.tokenize(all_conv)'''
     tweets = [c['text'] for c in all_conv]
@@ -35,7 +35,7 @@ def baseline_model(clf_name='nb'):
     model.build_vocab(tagged_tweet)
     print('vocabulary construction complete, start training')
     total_tokens = sum([len(sentence[0]) for sentence in X_train])
-    for epoch in range(20):
+    for epoch in range(10):
         model.train(X_train, total_examples=len(X_train),
                     total_words=total_tokens, epochs=model.iter)
         model.alpha -= 0.002  # decrease the learning rate
@@ -69,8 +69,8 @@ def baseline_model(clf_name='nb'):
     y_pred_rumor = clf_rumor.predict(X)
 
     # ovr_stance = OneVsRestClassifier(clf_stance).fit(X, y_stance)
-    clf_stance.fit(X, y_stance)
-    y_pred_stance = clf_stance.predict(X)
+    # clf_stance.fit(X, y_stance)
+    # y_pred_stance = clf_stance.predict(X)
 
     '''print('rumor: micro f1 score: %0.4f' % f1_score(y_rumor, y_pred_rumor, average='micro'))
     print('rumor: macro f1 score: %0.4f' % f1_score(y_rumor, y_pred_rumor, average='macro'))
@@ -78,11 +78,11 @@ def baseline_model(clf_name='nb'):
     print('stance: micro f1 score: %0.4f' % f1_score(y_stance, y_pred_stance, average='micro'))
     print('stance: macro f1 score: %0.4f' % f1_score(y_stance, y_pred_stance, average='macro'))'''
     cr_rumor = classification_report(y_rumor, y_pred_rumor, output_dict=True)
-    cr_stance = classification_report(y_stance, y_pred_stance, output_dict=True)
+    # cr_stance = classification_report(y_stance, y_pred_stance, output_dict=True)
 
     from pprint import pprint
     pprint(cr_rumor)
-    pprint(cr_stance)
+    # pprint(cr_stance)
 
 
 if __name__ == '__main__':

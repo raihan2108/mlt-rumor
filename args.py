@@ -4,7 +4,7 @@ import json
 class Args:
     def __init__(self):
         self.batch_size = 15
-        self.state_size = 256
+        self.state_size = 156
         self.emb_size = 256
         self.learning_rate = 0.0005
         self.cell_type = 'lstm'
@@ -13,17 +13,17 @@ class Args:
         self.epochs = 30
         self.main = 'RSD'
         self.archi = 'joint'
-        self.vae_latent_size = 8
-        self.vae_encoder_size = 16
-        self.vae_decoder_size = 16
+        self.vae_latent_size = 16
+        self.vae_encoder_size = 32
+        self.vae_decoder_size = 32
 
         self.display_epoch = 1
         self.train_performnace_epoch = 1
         self.test_epoch = 1
 
         # self.model_type = 'mlt-us'
-        # self.model_type = 'mlt-bow'
-        self.model_type = 'mlt-user'
+        self.model_type = 'mlt-bow'
+        # self.model_type = 'mlt-user'
         # self.model_type = 'mlt-single'
 
         # self.model_type = 'bow'
