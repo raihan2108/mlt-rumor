@@ -150,7 +150,7 @@ class MLTUser:
                 '''tv = tf.trainable_variables()
                 self.regularization_cost = tf.reduce_sum([tf.nn.l2_loss(v) for v in tv])'''
                 self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-                self.total_cost = self.rumor_label_cost + self.vae_loss + self.stance_label_cost # + self.reg_coeff * self.regularization_cost
+                self.total_cost = self.rumor_label_cost + self.vae_loss + tf.constant(1.0) * self.stance_label_cost    # + self.reg_coeff * self.regularization_cost
                 self.train_op = self.optimizer.minimize(self.total_cost)
         else:
             with tf.variable_scope('rumor-opt'):

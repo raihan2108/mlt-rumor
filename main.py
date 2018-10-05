@@ -14,7 +14,7 @@ from models.bow_model import BOWModel
 from models.mlt_user import MLTUser
 from models.mlt_single import MLT_Single
 
-dataset_name = 'twitter' # 'pheme'            # twitter
+dataset_name = 'pheme' # 'pheme'            # twitter
 
 if __name__ == '__main__':
     options = Args()
