@@ -92,7 +92,7 @@ class MLT_Single:
 
         if self.arch == 'joint':
             with tf.variable_scope('joint-opt'):
-                self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
+                self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
                 self.total_cost = self.rumor_label_cost    # + self.stance_label_cost
                 self.train_op = self.optimizer.minimize(self.total_cost)
         else:

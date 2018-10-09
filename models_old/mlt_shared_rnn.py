@@ -163,8 +163,12 @@ class MLTSharedRNN:
                     if self.arch == 'joint':
                         print('end of epoch: {} avg total cost: {:0.3f}'.
                               format(epi, global_cost))
+                        self.log.debug('end of epoch: {} avg total cost: {:0.3f}'.
+                              format(epi, global_cost))
                     else:
                         print('end of epoch: {} avg rumor cost: {:0.3f} avg stance cost: {:0.3f}'.
+                            format(epi, global_rumor_cost, global_stance_cost))
+                        self.log.debug('end of epoch: {} avg rumor cost: {:0.3f} avg stance cost: {:0.3f}'.
                             format(epi, global_rumor_cost, global_stance_cost))
                 '''if epi % self.train_performance_interval == 0:
                     avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor, \

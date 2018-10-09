@@ -31,7 +31,10 @@ if __name__ == '__main__':
     train_data_np, tmp_data_np, train_label_np, tmp_label_np, train_length_np, tmp_length_np = \
         train_test_split(data_np, labels_np, lengths_np, test_size=0.20, random_state=42)
     test_data_np, val_data_np, test_label_np, val_label_np, test_length_np, val_length_np = \
-        train_test_split(data_np, labels_np, lengths_np, test_size=0.20, random_state=42)
+        train_test_split(tmp_data_np, tmp_label_np, tmp_length_np, test_size=0.50, random_state=42)
+
+    log.debug(str(options))
+
     train_data_loader = Loader(train_data_np, train_length_np, train_label_np, options=options)
     test_data_loader = Loader(test_data_np, test_length_np, test_label_np, options=options)
     val_data_loader = Loader(val_data_np, val_length_np, val_label_np, options=options)

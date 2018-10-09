@@ -10,7 +10,7 @@ class Args:
         self.cell_type = 'lstm'
         self.rumor_label = 3
         self.stance_label = 4
-        self.epochs = 30
+        self.epochs = 50
         self.main = 'RSD'
         self.archi = 'joint'
         self.vae_latent_size = 8
@@ -24,10 +24,11 @@ class Args:
         # self.model_type = 'mlt-us'
         # self.model_type = 'mlt-bow'
         # self.model_type = 'mlt-user'
+        self.model_type = 'mlt-user-rnn'
         # self.model_type = 'mlt-single'
 
-        self.model_type = 'shared-mlp'
-        # self.model_type  = 'shared-rnn'
+        # self.model_type = 'shared-mlp'
+        # self.model_type = 'shared-rnn'
 
     def __str__(self):
         param_dict = {
