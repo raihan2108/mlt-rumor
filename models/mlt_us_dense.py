@@ -92,7 +92,7 @@ class MLT_US_DENSE:
                                       [1, self.shared_rnn_stance_output.shape[1], 1])
 
             stancernn_concat = tf.concat([stancernn_first, self.shared_rnn_stance_output])
-            output = tf.reshape(stancernn_concat, [-1, self.state_size])
+            output = tf.reshape(stancernn_concat, [-1, self.state_size*2])
             weight, bias = self._weight_and_bias(2*self.state_size, self.s_label_size)
 
             self.stance_score = (tf.matmul(output, weight) + bias)

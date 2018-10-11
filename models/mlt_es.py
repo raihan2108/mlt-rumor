@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.metrics import f1_score, accuracy_score
 from sklearn.metrics import classification_report
-
+import pdb
 
 class MLT_ES:
     def __init__(self, options):
@@ -139,9 +139,9 @@ class MLT_ES:
             self.reglosses['rumor-clf'] = tf.reduce_sum(tf.losses.get_regularization_losses(scope='rumor-clf'))
 
         with tf.variable_scope('stance-clf', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
-            stancernn_first = tf.tile(self.stanceRNN[0][:, :1, :], [1, self.stanceRNN.shape[1], 1])
-            stancernn_concat = tf.concat([stancernn_first, self.stanceRNN])
-            output = tf.reshape(stancernn_concat, [-1, self.state_size])
+            stancernn_first = tf.tile(self.stanceRNN[0][:, :1, :], [1, self.stanceRNN[0].shape[1], 1])
+            stancernn_concat = tf.concat([stancernn_first, self.stanceRNN[0]], axis=-1)
+            output = tf.reshape(stancernn_concat, [-1, 2*self.state_size])
             weight, bias = self._weight_and_bias(2*self.state_size, self.s_label_size)
             self.stance_score = (tf.matmul(output, weight) + bias)
             self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
@@ -159,7 +159,7 @@ class MLT_ES:
         regloss = 0
         if self.arch == 'joint':
             with tf.variable_scope('joint-opt'):
-                self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
+                self.optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate)
                 if self.add_regularization:
                     for v in self.reglosses.values():
                         regloss += v
@@ -173,7 +173,7 @@ class MLT_ES:
                     regloss = (self.reglosses['rumor_pre_shared'] + self.reglosses['shared'] +
                                self.reglosses['rumor-clf'] + self.reglosses['rumor_rnn_taskspecific'])
 
-                self.rumor_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
+                self.rumor_optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate)
                 self.rumor_train_op = self.rumor_optimizer.minimize(self.rumor_label_cost +regloss)
 
             regloss = 0
@@ -182,7 +182,7 @@ class MLT_ES:
                     regloss = (self.reglosses['stance_pre_shared'] + self.reglosses['shared'] +
                                self.reglosses['stance-clf'] + self.reglosses['stance_rnn_taskSpecific'])
 
-                self.stance_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
+                self.stance_optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate)
                 self.stance_train_op = self.stance_optimizer.minimize(self.stance_label_cost + regloss)
 
     def train_model(self, train_data_loader, test_data_loader, val_data_loader):
@@ -333,21 +333,21 @@ class MLT_ES:
                         max_stance_acc = cr_stance_test['micro avg']['f1-score']
                         max_cr_micro_stance = cr_stance_test
 
-                    print('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
-                          format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
+                    # print('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                          # format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
                     self.log.debug('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                                    format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
-                    print('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
-                          format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
+                    # print('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                          # format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
                     self.log.debug('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                                    format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
 
-                    print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
-                          format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
+                    # print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                          # format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
                     self.log.debug('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                                    format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
-                    print('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
-                          format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
+                    # print('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                          # format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
                     self.log.debug('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                                    format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
 
