@@ -88,8 +88,13 @@ class MLT_US_DENSE:
             self.pred_rumor_label = tf.cast(tf.argmax(self.rumor_score, axis=1), dtype=tf.int32)
 
         with tf.variable_scope('stance-clf'):
-            weight, bias = self._weight_and_bias(self.state_size, self.s_label_size)
-            output = tf.reshape(self.shared_rnn_stance_output, [-1, self.state_size])
+            stancernn_first = tf.tile(self.shared_rnn_stance_output[:, :1, :],
+                                      [1, self.shared_rnn_stance_output.shape[1], 1])
+
+            stancernn_concat = tf.concat([stancernn_first, self.shared_rnn_stance_output])
+            output = tf.reshape(stancernn_concat, [-1, self.state_size])
+            weight, bias = self._weight_and_bias(2*self.state_size, self.s_label_size)
+
             self.stance_score = (tf.matmul(output, weight) + bias)
             self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
             self.stance_true = tf.one_hot(tf.cast(self.stance_output, dtype=tf.int32), self.s_label_size)
@@ -261,21 +266,21 @@ class MLT_US_DENSE:
                         max_stance_acc = cr_stance_test['micro avg']['f1-score']
                         max_cr_micro_stance = cr_stance_test
 
-                    print('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
-                          format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
+                    #print('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                    #      format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
                     self.log.debug('val: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                                    format(val_micro_f1_rumor, val_macro_f1_rumor, val_micro_f1_rumor))
-                    print('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
-                          format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
+                    #print('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                    #      format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
                     self.log.debug('val: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                                    format(val_micro_f1_stance, val_macro_f1_stance, val_micro_f1_stance))
 
-                    print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
-                          format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
+                    #print('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
+                    #      format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
                     self.log.debug('test: micro f1 rumor:{:0.3f} macro f1 rumor:{:0.3f} accuracy rumor: {:0.3f}'.
                                    format(avg_micro_f1_rumor, avg_macro_f1_rumor, avg_acc_rumor))
-                    print('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
-                          format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
+                    #print('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
+                    #      format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
                     self.log.debug('test: micro f1 stance:{:0.3f} macro f1 stance:{:0.3f} accuracy stance: {:0.3f}'.
                                    format(avg_micro_f1_stance, avg_macro_f1_stance, avg_acc_stance))
 

@@ -69,8 +69,7 @@ class MLT_ES:
 
         return cell
 
-    def get_rnn(self, cell, rnn_input, scope):
-        init_state = cell.zero_state(self.batch_size, tf.float32)
+    def get_rnn(self, cell, rnn_input, scope, init_state):
         allstates, last_hidden_state = tf.nn.dynamic_rnn(cell, rnn_input,
                                                                    self.seq_len, init_state, scope=scope)
         if self.cell_type == "lstm":
@@ -82,43 +81,47 @@ class MLT_ES:
         self.reglosses = {}
         self.regularizer = tf.contrib.layers.l2_regularizer(scale=0.01)
         with tf.variable_scope('stance_pre_shared', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
-            self.stanceEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False)
+            self.stanceEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False, activation=None)
 
         if self.add_regularization:
             self.reglosses['stance_pre_shared'] = tf.reduce_sum((tf.losses.get_regularization_losses(scope='stance_pre_shared')))
 
         with tf.variable_scope('rumor_pre_shared', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
-            self.rumorEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False)
+            self.rumorEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False, activation=None)
 
         if self.add_regularization:
             self.reglosses['rumor_pre_shared'] = tf.reduce_sum(tf.losses.get_regularization_losses(scope='rumor_pre_shared'))
 
         with tf.variable_scope('shared', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
             shared_rnn_cell = self.make_rnn_cell()
+            shared_init_state = shared_rnn_cell.zero_state(self.batch_size, tf.float32)
+
 
         if self.add_regularization:
             self.reglosses['shared'] = tf.reduce_sum(tf.losses.get_regularization_losses(scope='shared'))
 
-        self.sharedRumorOut = self.get_rnn(shared_rnn_cell, self.rumorEmbedding, scope='shared')
-        self.sharedStanceOut = self.get_rnn(shared_rnn_cell, self.stanceEmbedding, scope='shared')
+        self.sharedRumorOut = self.get_rnn(shared_rnn_cell, self.rumorEmbedding, scope='shared', init_state=shared_init_state)
+        self.sharedStanceOut = self.get_rnn(shared_rnn_cell, self.stanceEmbedding, scope='shared', init_state=shared_init_state)
 
         with tf.variable_scope('stance_rnn_taskSpecific'):
             self.stanceCell = self.make_rnn_cell()
+            stancernn_init = self.stanceCell.zero_state(self.batch_size, tf.float32)
 
         if self.add_regularization:
             self.reglosses['stance_rnn_taskSpecific'] = tf.reduce_sum((tf.losses.get_regularization_losses(scope='stance_rnn_taskSpecific')))
 
         input = tf.concat([self.stanceEmbedding, self.sharedRumorOut[0]], axis=-1)
-        self.stanceRNN = self.get_rnn(self.stanceCell, input, scope="stance_rnn_taskSpecific")
+        self.stanceRNN = self.get_rnn(self.stanceCell, input, "stance_rnn_taskSpecific", stancernn_init)
 
         with tf.variable_scope('rumor_rnn_taskspecific'):
             self.rumorCell = self.make_rnn_cell()
+            rumornn_init = self.rumorCell.zero_state(self.batch_size, tf.float32)
 
         if self.add_regularization:
             self.reglosses['rumor_rnn_taskspecific'] = tf.reduce_sum((tf.losses.get_regularization_losses(scope='rumor_rnn_taskspecific')))
 
         input = tf.concat([self.rumorEmbedding, self.sharedStanceOut[0]], axis=-1)
-        self.rumorRNN = self.get_rnn(self.rumorCell, input, scope='rumor_rnn_taskspecific')
+        self.rumorRNN = self.get_rnn(self.rumorCell, input, 'rumor_rnn_taskspecific', rumornn_init)
 
 
 
@@ -136,11 +139,10 @@ class MLT_ES:
             self.reglosses['rumor-clf'] = tf.reduce_sum(tf.losses.get_regularization_losses(scope='rumor-clf'))
 
         with tf.variable_scope('stance-clf', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
-            weight, bias = self._weight_and_bias(self.state_size, self.s_label_size)
-
             stancernn_first = tf.tile(self.stanceRNN[0][:, :1, :], [1, self.stanceRNN.shape[1], 1])
             stancernn_concat = tf.concat([stancernn_first, self.stanceRNN])
-            output = tf.reshape(self.stanceRNN[0], [-1, self.state_size])
+            output = tf.reshape(stancernn_concat, [-1, self.state_size])
+            weight, bias = self._weight_and_bias(2*self.state_size, self.s_label_size)
             self.stance_score = (tf.matmul(output, weight) + bias)
             self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
             self.stance_true = tf.one_hot(tf.cast(self.stance_output, dtype=tf.int32), self.s_label_size)
@@ -165,6 +167,7 @@ class MLT_ES:
                 self.total_cost = self.rumor_label_cost + self.stance_label_cost  + regloss
                 self.train_op = self.optimizer.minimize(self.total_cost)
         else:
+            regloss = 0
             with tf.variable_scope('rumor-opt'):
                 if self.add_regularization:
                     regloss = (self.reglosses['rumor_pre_shared'] + self.reglosses['shared'] +
@@ -173,6 +176,7 @@ class MLT_ES:
                 self.rumor_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
                 self.rumor_train_op = self.rumor_optimizer.minimize(self.rumor_label_cost +regloss)
 
+            regloss = 0
             with tf.variable_scope('stance-opt'):
                 if self.add_regularization:
                     regloss = (self.reglosses['stance_pre_shared'] + self.reglosses['shared'] +
@@ -224,21 +228,23 @@ class MLT_ES:
                         global_rumor_cost += rumor_cost
                         global_stance_cost += stance_cost
                     else:
-                        fd_rumor = {
-                            self.tweet_vec: batch_data,
-                            self.rumor_output: rumor_batch_label,
-                            self.seq_len: batch_length
-                        }
-                        _, rumor_cost = sess.run([self.rumor_train_op, self.rumor_label_cost], feed_dict=fd_rumor)
-                        global_rumor_cost += rumor_cost
+                        if np.random.rand() > 0.5:
+                            fd_rumor = {
+                                self.tweet_vec: batch_data,
+                                self.rumor_output: rumor_batch_label,
+                                self.seq_len: batch_length
+                                }
+                            _, rumor_cost = sess.run([self.rumor_train_op, self.rumor_label_cost], feed_dict=fd_rumor)
+                            global_rumor_cost += rumor_cost
+                        else:
 
-                        fd_stance = {
-                            self.tweet_vec: batch_data,
-                            self.stance_output: stance_batch_label,
-                            self.seq_len: batch_length
-                        }
-                        _, stance_cost = sess.run([self.stance_train_op, self.stance_label_cost], feed_dict=fd_stance)
-                        global_stance_cost += stance_cost
+                            fd_stance = {
+                                self.tweet_vec: batch_data,
+                                self.stance_output: stance_batch_label,
+                                self.seq_len: batch_length
+                                }
+                            _, stance_cost = sess.run([self.stance_train_op, self.stance_label_cost], feed_dict=fd_stance)
+                            global_stance_cost += stance_cost
 
                 if self.arch == 'joint':
                     global_cost /= n_batches
