@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score, accuracy_score
 from sklearn.metrics import classification_report
 
 
-class MLT_US:
+class MLT_US_DENSE:
     def __init__(self, options):
         self.batch_size = options.batch_size
         self.max_seq_len = options.seq_len
@@ -53,10 +53,10 @@ class MLT_US:
         self.rumor_output = tf.placeholder(shape=[self.batch_size], dtype=tf.float32)
 
     def build_graph(self):
-        with tf.variable_scope('stance_pre_shared', reuse=tf.AUTO_REUSE):
+        with tf.variable_scope('stance_pre_shared'):
             self.stanceEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False)
 
-        with tf.variable_scope('rumor_pre_shared', reuse=tf.AUTO_REUSE):
+        with tf.variable_scope('rumor_pre_shared'):
             self.rumorEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False)
 
         with tf.variable_scope('shared'):
@@ -157,21 +157,22 @@ class MLT_US:
                         global_rumor_cost += rumor_cost
                         global_stance_cost += stance_cost
                     else:
-                        fd_rumor = {
-                            self.tweet_vec: batch_data,
-                            self.rumor_output: rumor_batch_label,
-                            self.seq_len: batch_length
-                        }
-                        _, rumor_cost = sess.run([self.rumor_train_op, self.rumor_label_cost], feed_dict=fd_rumor)
-                        global_rumor_cost += rumor_cost
-
-                        fd_stance = {
-                            self.tweet_vec: batch_data,
-                            self.stance_output: stance_batch_label,
-                            self.seq_len: batch_length
-                        }
-                        _, stance_cost = sess.run([self.stance_train_op, self.stance_label_cost], feed_dict=fd_stance)
-                        global_stance_cost += stance_cost
+                        if np.random.rand() > 0.5:
+                            fd_rumor = {
+                                self.tweet_vec: batch_data,
+                                self.rumor_output: rumor_batch_label,
+                                self.seq_len: batch_length
+                            }
+                            _, rumor_cost = sess.run([self.rumor_train_op, self.rumor_label_cost], feed_dict=fd_rumor)
+                            global_rumor_cost += rumor_cost
+                        else:
+                            fd_stance = {
+                                self.tweet_vec: batch_data,
+                                self.stance_output: stance_batch_label,
+                                self.seq_len: batch_length
+                            }
+                            _, stance_cost = sess.run([self.stance_train_op, self.stance_label_cost], feed_dict=fd_stance)
+                            global_stance_cost += stance_cost
 
                 if self.arch == 'joint':
                     global_cost /= n_batches

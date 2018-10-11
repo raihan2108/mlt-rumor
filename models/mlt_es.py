@@ -83,37 +83,47 @@ class MLT_ES:
         self.regularizer = tf.contrib.layers.l2_regularizer(scale=0.01)
         with tf.variable_scope('stance_pre_shared', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
             self.stanceEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False)
-            self.stanceCell = self.make_rnn_cell()
 
         if self.add_regularization:
-            reg_variables = list(set(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES, scope='stance_pre_shared')))
             self.reglosses['stance_pre_shared'] = tf.reduce_sum((tf.losses.get_regularization_losses(scope='stance_pre_shared')))
-            # self.reglosses['stance_pre_shared'] = tf.reduce_mean(reg_variables)
-
-        self.stanceRNN = self.get_rnn(self.stanceCell, self.stanceEmbedding, scope="stance_pre_shared")
 
         with tf.variable_scope('rumor_pre_shared', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
             self.rumorEmbedding = tf.layers.dense(self.tweet_vec, self.emb_size, use_bias=False)
-            self.rumorCell = self.make_rnn_cell()
 
         if self.add_regularization:
             self.reglosses['rumor_pre_shared'] = tf.reduce_sum(tf.losses.get_regularization_losses(scope='rumor_pre_shared'))
 
-        self.rumorRNN = self.get_rnn(self.rumorCell, self.rumorEmbedding, scope='rumor_pre_shared')
-
         with tf.variable_scope('shared', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
             shared_rnn_cell = self.make_rnn_cell()
-            shared_inputs_stance = tf.concat([self.stanceRNN[0],self.stanceEmbedding], axis=-1)
-            shared_inputs_rumor = tf.concat([self.rumorRNN[0],self.rumorEmbedding], axis=-1)
 
         if self.add_regularization:
             self.reglosses['shared'] = tf.reduce_sum(tf.losses.get_regularization_losses(scope='shared'))
 
-        self.sharedRumorOut = self.get_rnn(shared_rnn_cell, shared_inputs_rumor, scope='shared')
-        self.sharedStanceOut = self.get_rnn(shared_rnn_cell, shared_inputs_stance, scope='shared')
+        self.sharedRumorOut = self.get_rnn(shared_rnn_cell, self.rumorEmbedding, scope='shared')
+        self.sharedStanceOut = self.get_rnn(shared_rnn_cell, self.stanceEmbedding, scope='shared')
+
+        with tf.variable_scope('stance_rnn_taskSpecific'):
+            self.stanceCell = self.make_rnn_cell()
+
+        if self.add_regularization:
+            self.reglosses['stance_rnn_taskSpecific'] = tf.reduce_sum((tf.losses.get_regularization_losses(scope='stance_rnn_taskSpecific')))
+
+        input = tf.concat([self.stanceEmbedding, self.sharedRumorOut[0]], axis=-1)
+        self.stanceRNN = self.get_rnn(self.stanceCell, input, scope="stance_rnn_taskSpecific")
+
+        with tf.variable_scope('rumor_rnn_taskspecific'):
+            self.rumorCell = self.make_rnn_cell()
+
+        if self.add_regularization:
+            self.reglosses['rumor_rnn_taskspecific'] = tf.reduce_sum((tf.losses.get_regularization_losses(scope='rumor_rnn_taskspecific')))
+
+        input = tf.concat([self.rumorEmbedding, self.sharedStanceOut[0]], axis=-1)
+        self.rumorRNN = self.get_rnn(self.rumorCell, input, scope='rumor_rnn_taskspecific')
+
+
 
         with tf.variable_scope('rumor-clf', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
-            self.rumor_score = tf.layers.dense(inputs=self.sharedRumorOut[-1], units=self.r_label_size,
+            self.rumor_score = tf.layers.dense(inputs=self.rumorRNN[-1], units=self.r_label_size,
                                                activation=tf.nn.relu,
                                                kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                                bias_initializer=tf.constant_initializer(0.25))
@@ -127,7 +137,10 @@ class MLT_ES:
 
         with tf.variable_scope('stance-clf', regularizer=self.regularizer, reuse=tf.AUTO_REUSE):
             weight, bias = self._weight_and_bias(self.state_size, self.s_label_size)
-            output = tf.reshape(self.sharedStanceOut[0], [-1, self.state_size])
+
+            stancernn_first = tf.tile(self.stanceRNN[0][:, :1, :], [1, self.stanceRNN.shape[1], 1])
+            stancernn_concat = tf.concat([stancernn_first, self.stanceRNN])
+            output = tf.reshape(self.stanceRNN[0], [-1, self.state_size])
             self.stance_score = (tf.matmul(output, weight) + bias)
             self.stance_score = tf.reshape(self.stance_score, [-1, self.max_seq_len, self.s_label_size])
             self.stance_true = tf.one_hot(tf.cast(self.stance_output, dtype=tf.int32), self.s_label_size)
@@ -154,14 +167,16 @@ class MLT_ES:
         else:
             with tf.variable_scope('rumor-opt'):
                 if self.add_regularization:
-                    regloss = self.reglosses['rumor_pre_shared'] + self.reglosses['shared'] + self.reglosses['rumor-clf']
+                    regloss = (self.reglosses['rumor_pre_shared'] + self.reglosses['shared'] +
+                               self.reglosses['rumor-clf'] + self.reglosses['rumor_rnn_taskspecific'])
 
                 self.rumor_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
                 self.rumor_train_op = self.rumor_optimizer.minimize(self.rumor_label_cost +regloss)
 
             with tf.variable_scope('stance-opt'):
                 if self.add_regularization:
-                    regloss = self.reglosses['stance_pre_shared'] + self.reglosses['shared'] + self.reglosses['stance-clf']
+                    regloss = (self.reglosses['stance_pre_shared'] + self.reglosses['shared'] +
+                               self.reglosses['stance-clf'] + self.reglosses['stance_rnn_taskSpecific'])
 
                 self.stance_optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
                 self.stance_train_op = self.stance_optimizer.minimize(self.stance_label_cost + regloss)
@@ -346,7 +361,15 @@ class MLT_ES:
 
         self.log.debug('classification report best micro stance')
         self.log.debug(json.dumps(max_cr_micro_stance, indent=2))
+        print("0:{:0.3f}, 1: {:0.3f}, 2: {:0.3f}, 3: {:0.3f}".format(max_cr_micro_stance["0"]["f1-score"],
+                                                                     max_cr_micro_stance["1"]["f1-score"],
+                                                                     max_cr_micro_stance["2"]["f1-score"],
+                                                                     max_cr_micro_stance["3"]["f1-score"]))
         self.log.debug('classification report best macro stance')
+        print("0:{:0.3f}, 1: {:0.3f}, 2: {:0.3f}, 3: {:0.3f}".format(max_cr_macro_stance["0"]["f1-score"],
+                                                                     max_cr_macro_stance["1"]["f1-score"],
+                                                                     max_cr_macro_stance["2"]["f1-score"],
+                                                                     max_cr_macro_stance["3"]["f1-score"]))
         self.log.debug(json.dumps(max_cr_macro_stance, indent=2))
 
     def test_model(self, sess: tf.Session, data_loader):
